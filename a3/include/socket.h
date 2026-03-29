@@ -1,0 +1,14 @@
+// this is the helper function from lab 10
+
+#ifndef _SOCKET_H_
+#define _SOCKET_H_
+
+#include <netinet/in.h>
+
+struct sockaddr_in *init_server_addr(int port);
+int set_up_server_socket(struct sockaddr_in *self, int num_queue);
+int accept_connection(int listenfd);
+
+int connect_to_server(int port, const char *hostname);
+
+#endif
