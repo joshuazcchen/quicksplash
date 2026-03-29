@@ -8,12 +8,20 @@
 int main(int argc, char *argv[]) {
     // must have only one extra param
     int s = connect_to_server(30000, "127.0.0.1");
-    Packet p;
-    p.type = 1;
-    strncpy(p.data, argv[1], BUFFERSIZE);
+    Packet p1;
+    p1.type = 1;
+    strcpy(p1.data, "penis\r\n");
+    write(s, &p1, sizeof(Packet));
 
-    write(s, &p, sizeof(Packet));
-    sleep(2);
+    printf("spaghetti");
+    p1.type = 2;
+    strcpy(p1.data, "aaaaadsf\r\n");
+    write(s, &p1, sizeof(Packet));
+
+    strcpy(p1.data, "orange\r\n");
+    write(s, &p1, sizeof(Packet));
+
     close(s);
     return 0;
 }
+
