@@ -8,6 +8,20 @@
 #include <errno.h>
 
 // WHOEVER ENDS UP IMPLEMENTING A PROPER GAME_SEND NEEDS TO REMEMBER TO ALWAYS HAVE PRECONDITION WHERE FIRST FOUR BYTES ARE THE TYPE FOR THE INITIAL THING
+// nvm i ended up implementing game_send
+int s_send(int server, int type, char *data) {
+    game_send(server, create_packet(type, data));
+}
+
+int game_send(int server, Packet p) {
+    write(server, &p, sizeof(Packet));
+}
+
+Packet create_packet(int type, char *data) {
+    Packet p;
+    p.type = type;
+    strcpy(p1.data, data);
+}
 
 // Reads a packet sent from a given player addr p.
 // Returns 1 if buffer done, 0 if read ok but not done, and <=-1 if something goes wrong
