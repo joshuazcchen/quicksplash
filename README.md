@@ -43,3 +43,6 @@ main folder
         - input.c (handles user input for voting and prompts)
     - readme.md
     - Makefile
+// final version did not end up looking too much like this.
+// There is now also an additional comms.h and comms.c, and a bit more stuff went to the helper functions from Lab 10.
+// Rest of the functionality should probably remain same.
