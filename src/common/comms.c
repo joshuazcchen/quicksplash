@@ -9,18 +9,20 @@
 
 // WHOEVER ENDS UP IMPLEMENTING A PROPER GAME_SEND NEEDS TO REMEMBER TO ALWAYS HAVE PRECONDITION WHERE FIRST FOUR BYTES ARE THE TYPE FOR THE INITIAL THING
 // nvm i ended up implementing game_send
-int s_send(int server, int type, char *data) {
-    game_send(server, create_packet(type, data));
-}
-
-int game_send(int server, Packet p) {
-    write(server, &p, sizeof(Packet));
+int game_send(int socket, Packet p) {
+    write(socket, &p, sizeof(Packet));
+    return 1;
 }
 
 Packet create_packet(int type, char *data) {
     Packet p;
     p.type = type;
-    strcpy(p1.data, data);
+    strcpy(p.data, data);
+    return p;
+}
+
+int s_send(int socket, int type, char *data) {
+    return game_send(socket, create_packet(type, data));    
 }
 
 // Reads a packet sent from a given player addr p.
