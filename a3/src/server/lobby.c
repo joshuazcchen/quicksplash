@@ -6,12 +6,11 @@
 #include "comms.h"
 #include <stdlib.h>
 #include <unistd.h>
+#include "protocol.h"
+#include <string.h>
 
-#define LOBBY_SIZE 5 // TODO: move to header 
-
-Player players[LOBBY_SIZE];
-
-int game_read(Player *p); // TODO: move to header
+#define LOBBY_SIZE 5
+extern Player players[LOBBY_SIZE];
 
 void start_lobby(int listenfd) {
     fd_set fds;
@@ -22,18 +21,23 @@ void start_lobby(int listenfd) {
 
     for (int i = 0; i < LOBBY_SIZE; i++) {
         players[i].fd = -1;
+        memset(players[i].name, '\0', 32);
     }
+    
+    int started = 0;
+    int joined = 0;
 
-    while (1) {
+    while (!started) {
         read_fds = fds;
-        // TODO: error check this properly
-        if (select(max_fd + 1, &read_fds, NULL, NULL, NULL) < 0) { continue; }
+        if (select(max_fd + 1, &read_fds, NULL, NULL, NULL) < 0) {
+            continue;
+        }
 
-        // manages new connection attempts
         if (FD_ISSET(listenfd, &read_fds)) {
-            int fd_n = accept_connection(listenfd); // TODO: fix my stupid variable naming, fd_n is the nth fd, but breaks convention of fds, which in itself is kinda a stupid name
+            int fd_n = accept_connection(listenfd);
             if (fd_n != -1) {
                 FD_SET(fd_n, &fds);
+                // TODO: we really gotta go thru and just remove all these expansions into ternaries even if kai has an aneurysm
                 if (fd_n > max_fd) {
                     max_fd = fd_n;
                 }
@@ -41,43 +45,19 @@ void start_lobby(int listenfd) {
                     if (players[i].fd == -1) {
                         players[i].fd = fd_n;
                         players[i].inbuf = 0;
+                        players[i].ready = 0;
+                        sprintf(players[i].name, "%d", i); // we gotta figure out how the join packet works but for now im just putting an int.
+                        printf("player joined successfully\n");
+                        joined++;
                         break;
                     }
                 }
-            }
-        }
-
-        // listen for packets
-        int ret;
-        for (int i = 0; i < LOBBY_SIZE; i++) {
-            if (players[i].fd != -1 && FD_ISSET(players[i].fd, &read_fds)) {
-                while ((ret = game_read(&players[i])) == 1) {
-                    printf("big %d", ret);
-                    if (players[i].ready) {
-                        printf("YOOOOO SUCCESS! PACKET IS READY! user %d type %d data %s\n", i, players[i].partial.type, players[i].partial.data);
-                        players[i].ready = 0;
-                    } else if (ret < 0) {
-                        printf("test buffer failed %d\n", players[i].fd);
-                        close(players[i].fd);
-                        FD_CLR(players[i].fd, &fds);
-                        players[i].fd = -1;
-                    }
+                if (joined >= LOBBY_SIZE) {
+                    printf("lobby full");
+                    started = 1;
                 }
-
-//                if ((ret = game_read(&players[i])) == 1) {
-//                    printf("test buffer success, buffer read from %d of type %d %s\n", players[i].fd, players[i].partial.type, players[i].partial.data);
-//                    if (players[i].partial.type == 0) {
-//                        
-//                    }
-//                } else if (ret == 0) {
-//                    printf("read yes buffer not full %d %d %s\n", players[i].fd, players[i].partial.type, players[i].partial.data);
-//                } else {
-//                    printf("test buffer failed %d\n", players[i].fd);
-//                    close(players[i].fd);
-//                    FD_CLR(players[i].fd, &fds);
-//                    players[i].fd = -1;
-//                }
             }
         }
     }
+    printf("woohoo");
 }

@@ -1,5 +1,6 @@
 #include "socket.h"
 #include "comms.h"
+#include "protocol.h"
 #include "gamestructs.h"
 #include <sys/socket.h>
 #include <unistd.h>
@@ -7,56 +8,38 @@
 #include <string.h>
 #include <errno.h>
 
-// WHOEVER ENDS UP IMPLEMENTING A PROPER GAME_SEND NEEDS TO REMEMBER TO ALWAYS HAVE PRECONDITION WHERE FIRST FOUR BYTES ARE THE TYPE FOR THE INITIAL THING
-// nvm i ended up implementing game_send
-int game_send(int socket, Packet p) {
-    write(socket, &p, sizeof(Packet));
-    return 1;
-}
-
-Packet create_packet(int type, char *data) {
-    Packet p;
-    p.type = type;
-    strcpy(p.data, data);
-    return p;
-}
-
-int s_send(int socket, int type, char *data) {
-    return game_send(socket, create_packet(type, data));    
-}
-
-// Reads a packet sent from a given player addr p.
-// Returns 1 if buffer done, 0 if read ok but not done, and <=-1 if something goes wrong
-int game_read(Player *p) {
-    int room = sizeof(p->partial) - p->inbuf;
+// migrating stuff over to use response instead of ints for error logging bc i think it looks more professional rn. i think you can work with both basically the same way tho so it doesnt rlly make a diff.
+response comms_read(int fd, Packet *partial, int *inbuf) {
+    int room = sizeof(Packet) - *inbuf;
     if (room <= 0) {
-        return -1; // we need better error logging, currently rewriting this entire set of functions so it actually has error checking and handles different packet types properly rn.
+        return READ_FAIL;
     }
-    
     int nbytes;
-    if (p->inbuf > 0) {
-        nbytes = recv(p->fd, (char*) &p->partial + p->inbuf, room, MSG_DONTWAIT);
+    if (*inbuf > 0) {
+        nbytes = recv(fd, (char*)partial + *inbuf, room, MSG_DONTWAIT);
         if (nbytes < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            nbytes = 0;
+            return READ_PARTIAL;
         } else if (nbytes <= 0) {
-            return -2;
-        }
-    } else {
-        nbytes = read(p->fd, (char*) &p->partial + p->inbuf, room);
-        if (nbytes <= 0) { return -2; }
-    }
-    p->inbuf += nbytes;
-    if (p->inbuf == sizeof(Packet)) {
-        for (int i = 0; i < BUFFERSIZE - 1; i++) {
-            if (p->partial.data[i] == '\r' && p->partial.data[i+1] == '\n') {
-                p->partial.data[i] = '\0';
-                break;
+            return CLIENT_DISCONNECT;
+        } else {
+            nbytes = read(fd, (char*)partial + *inbuf, room);
+            if (nbytes <= 0) {
+                return CLIENT_DISCONNECT;
             }
         }
-        p->ready = 1;
-        p->inbuf = 0;
-        return 1;
+        *inbuf += nbytes;
+        if (*inbuf == sizeof(Packet)) {
+            return READ_SUCCESS;
+        }
     }
-
-    return 0;
+    return READ_PARTIAL;
 }
+
+response comms_send(int fd, Packet p) {
+    if (write(fd, &p, sizeof(p)) < 0) {
+        perror("comms_send");
+        return SEND_FAIL;
+    }
+    return SEND_SUCCESS;
+}
+

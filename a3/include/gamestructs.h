@@ -6,9 +6,29 @@
 #define MAX_RESPONSE_SIZE 256
 #define PROMPT_COUNT 135
 
+typedef enum {
+    CLIENT_DISCONNECT = -2,
+    READ_FAIL = -1,
+    SEND_FAIL = -1,
+    READ_PARTIAL = 0,
+    READ_SUCCESS = 1,
+    SEND_SUCCESS = 1,
+    PARTIAL_READ_SUCCESS = 2,
+    TIMEOUT = 3
+} response;
+
+typedef enum {
+    P_TEST = 1,
+    P_JOIN = 2,
+    P_LEAVE = 3,
+    P_CARD = 4,
+    P_REPLY = 5,
+    P_VOTE = 6,
+    P_STATS = 7
+} p_type;
 
 typedef struct {
-    int type; // 1 is currently being used for testing, we can discuss hwo to do this properly maybe with enums later on
+    p_type type;
     char data[BUFFERSIZE];
 } Packet; // data sent to and from the client, declare a specific id for type of info so it can be processed accordingly.
           

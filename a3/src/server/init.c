@@ -8,6 +8,9 @@
 #include "socket.h"
 #include <stdlib.h>
 
+#define LOBBY_SIZE 5 // i swear to god ive defined this thing in like three different files. TODO: MOVE IT SOMEWHERE PERMANENTLY. IT MAKES SENSE HERE BUT NOT REALLY.
+Player players[LOBBY_SIZE];
+
 void start_lobby(int listenfd); // TODO: move this to a header
 
 int main() {
