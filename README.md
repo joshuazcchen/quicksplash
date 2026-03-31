@@ -24,6 +24,7 @@ main folder
     - gamestructs.h (header file for all game structs like the cards, players, game states (voting, prompt, etc).)
     - comms.h (how to decode the communication between the socket and client and vice versa).
     - sockets.h (just put every useful common socket thing into here so that we dont have to recode it, do namespaces exist in C?, even if not we can basically treat it like that).
+    - protocol.h (manages the types ig? how to read a packet ig)
     - votes.h (voting substates if necessary and also potential necessary voting?)
 - assets
     - prompts.txt
@@ -33,16 +34,19 @@ main folder
         - sockets.c (manage all socket logic here?)
         - cards.c (handle prompts.txt)
         - votes.c (handles voting)
+        - comms.c (basic send/receive)
+        - protocol.c (manages typecasting of the Packets).
     - server (everything in this folder will be compiled to a runserver executable)
         - init.c (start up the server w/ necessary config)
+        - server_comms.c (manages all the server specific send/receive)
         - lobby.c (once init ends, go here and have this screen be listening to clients trying to join, until the host decides theyre full and opens the proper game, thus closing the lobby).
         - game.c (handles the actual game and states)
     - client (everything in this folder will be compiled to a runclient executable)
         - init.c (this will handle the initial join).
         - output.c (handle rendering cool game visual)
+        - client_comms.c (manages all the client specific send/receive)
         - input.c (handles user input for voting and prompts)
+    - test (test cases in the future)
+        - test_client.c (technically this should be a test case but right now its just that I'm using to test around with features to verify they work)
     - readme.md
     - Makefile
-// final version did not end up looking too much like this.
-// There is now also an additional comms.h and comms.c, and a bit more stuff went to the helper functions from Lab 10.
-// Rest of the functionality should probably remain same.
