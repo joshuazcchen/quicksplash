@@ -59,10 +59,9 @@ int main(){
     for(int i =0; i< PROMPT_COUNT;i++){
         printf("card with prompt: %s ",cards[i]->prompt_text);
     }
-    free(cards);
+    free_cards(cards);
     fclose(prompt_file);
 
-    
     return 1; 
 }
 
