@@ -2,6 +2,10 @@
 #define GAMESTRUCTS_H
 #define BUFFERSIZE 256
 #define buffersize 256 // TODO: why did i use two different ones???????????? i forgot that the header included this 
+#define MAX_PROMPT_SIZE 1000
+#define MAX_RESPONSE_SIZE 256
+#define PROMPT_COUNT 135
+
 
 typedef struct {
     int type; // 1 is currently being used for testing, we can discuss hwo to do this properly maybe with enums later on
@@ -18,5 +22,11 @@ typedef struct {
     Packet partial;
     int inbuf;
 } Player;
+
+typedef struct{
+    char  * prompt_text; //prompt_text of the card
+    // char  * response; //user response of the card
+
+} Card;
 
 #endif
