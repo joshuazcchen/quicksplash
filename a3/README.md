@@ -38,6 +38,7 @@ main folder
         - protocol.c (manages typecasting of the Packets).
     - server (everything in this folder will be compiled to a runserver executable)
         - init.c (start up the server w/ necessary config)
+            - this ended up being the full server loop, idk if we wanna keep it like this?
         - server_comms.c (manages all the server specific send/receive)
         - lobby.c (once init ends, go here and have this screen be listening to clients trying to join, until the host decides theyre full and opens the proper game, thus closing the lobby).
         - game.c (handles the actual game and states)
