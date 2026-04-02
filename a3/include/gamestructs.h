@@ -20,12 +20,12 @@ typedef struct {
     p_type type;
     char data[BUFFERSIZE];
 } Packet; // data sent to and from the client, declare a specific id for type of info so it can be processed accordingly.
-          
+
 typedef struct {
     int p_id; // we can store the user's machine info somewhere inside this struct too so that we know who we're listening to from the serverside?
     int fd;
     char name[32];
-    
+
     // idk how else to do this so ig we got a staging area now. getting closer to accidentally making git by the minute
     int ready;
     Packet partial;
@@ -39,3 +39,4 @@ typedef struct{
 } Card;
 
 #endif
+
