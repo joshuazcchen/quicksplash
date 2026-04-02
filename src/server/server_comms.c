@@ -7,12 +7,12 @@
 #include <unistd.h>
 
 #define LOBBY_SIZE 5
-extern PLAYER players[LOBBY_SIZE];
+extern Player players[LOBBY_SIZE];
 
 response s_send(Packet p) {
     for (int i = 0; i < LOBBY_SIZE; i++) {
         if (players[i].fd > 2) {
-            comms.send(players[i].fd, p);
+            comms_send(players[i].fd, p);
         }
     }
     // this is lowkey a fake success but idk how to actually manage the lobby size variable here tbh.
