@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h> 
-#include "../../include/gamestructs.h"
+#include "gamestructs.h"
 
 
 // generates the array of cards from the prompt file
