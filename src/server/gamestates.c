@@ -1,22 +1,22 @@
-#include "../../include/gamestructs.h"
-#include "../common/cards.c"
+#include "gamestructs.h"
+#include "cards.c"
+#include "comms.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-//TODO GET RID OF FILEPATHS EVENTUALLY 
 
 Card ** cards;
 Card *drawn_card;
 
 // all logic of intializing the game should go here 
-void setup_game(){
+response setup_game(){
     cards = generate_cards();
-    return; 
+    return GAME_SUCCESS; 
 }
 
 // start the round of the game
-void play_round(){
+response play_round(){
     drawn_card = draw_random(cards);
     drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
     for(int i = 0; i < LOBBY_SIZE; i++){
@@ -26,48 +26,34 @@ void play_round(){
         // printf("drawn card: %s \n player responses: %s \n",drawn_card->prompt_text,drawn_card->responses);
     }
 
-    return; 
+    return GAME_SUCCESS; 
 }
+
 //end the round 
-void end_round(){
+response end_round(){
     free_card(drawn_card); 
     drawn_card = NULL; 
-    return; 
+    return GAME_SUCCESS; 
 }
 
-void wrap_up_game(){
+response wrap_up_game(){
     free_cards(cards);
     cards = NULL; 
-    return; 
+    return GAME_SUCCESS; 
 }
 
-void player_join(){
-    return; 
+response player_join(){
+    return GAME_SUCCESS; 
 }
 
-void player_leave(){
-    return; 
+response player_leave(){
+    return GAME_SUCCESS; 
 }
 
-void intitiate_vote(){
-    return; 
+response intitiate_vote(){
+    return GAME_SUCCESS; 
 }
 
-void game_loop(){
-    while (1){
-        return;
-    }
-
-    return; 
-}
-
-
-//TEMP main only used for debugging 
-int main(){
-
-    setup_game();
-    play_round();
-    end_round();
-    wrap_up_game();
-    return 1; 
+response game_loop(){
+    return GAME_SUCCESS; 
 }
