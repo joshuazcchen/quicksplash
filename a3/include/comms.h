@@ -6,15 +6,17 @@ typedef enum {
     CLIENT_DISCONNECT = -2,
     READ_FAIL = -1,
     SEND_FAIL = -1,
+    GAME_FAIL = -1,
     READ_PARTIAL = 0,
     READ_SUCCESS = 1,
+    GAME_SUCCESS = 1,
     SEND_SUCCESS = 1,
     PARTIAL_READ_SUCCESS = 2,
     TIMEOUT = 3
 } response;
 
 // TODO: move comment from comms.c to here abt returns
-int game_read(Player *p);
+response comms_read(int fd, Packet *partial, int *inbuf);
 
-int game_send(int socket, Packet p);
+response comms_send(int fd, Packet p);
 #endif
