@@ -5,6 +5,7 @@
 #define MAX_PROMPT_SIZE 1000
 #define MAX_RESPONSE_SIZE 256
 #define PROMPT_COUNT 135
+#define LOBBY_SIZE 5
 
 typedef enum {
     P_TEST = 1,
@@ -33,10 +34,17 @@ typedef struct {
 } Player;
 
 typedef struct{
-    char  * prompt_text; //prompt_text of the card
-    // char  * response; //user response of the card
+    Player player; // player sending the response 
+    char * response; // the response player typed in
+} Response;
 
+
+typedef struct{
+    char  * prompt_text; //prompt_text of the card
+    Response ** responses; //array of player responses
 } Card;
+
+
 
 #endif
 

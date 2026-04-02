@@ -6,8 +6,16 @@
 #include "../../include/gamestructs.h"
 
 
+// generates the array of cards from the prompt file
+Card ** generate_cards(){
+    FILE *prompt_file;
+    srand(time(NULL));
 
-Card ** generate_cards(FILE * file){
+    prompt_file = fopen("../../assets/prompts.txt","r"); 
+    if (!prompt_file){
+        perror("fopen");
+    }
+
     char prompt[MAX_PROMPT_SIZE]; 
     Card **cards = malloc(sizeof(Card *) * (PROMPT_COUNT));
     // generate an array of PROMPT_COUNT pointers 
@@ -17,7 +25,7 @@ Card ** generate_cards(FILE * file){
     }
     
     int i = 0;
-    while(fgets(prompt,MAX_PROMPT_SIZE,file) != NULL && i < PROMPT_COUNT){
+    while(fgets(prompt,MAX_PROMPT_SIZE,prompt_file) != NULL && i < PROMPT_COUNT){
         cards[i] = malloc(sizeof(Card)); // create a card object 
         if (!cards[i]) {
             perror("malloc");
@@ -32,10 +40,12 @@ Card ** generate_cards(FILE * file){
         (cards[i]->prompt_text)[(strlen(prompt)-1)] = '\0'; // replace newline char with null term
         i++; 
     }
+    fclose(prompt_file);
 
     return cards; 
 }
 
+// free the array of cards
 void free_cards(Card ** cards){
     for(int j = 0; j < PROMPT_COUNT;j++){
         free(cards[j]->prompt_text);
@@ -43,6 +53,7 @@ void free_cards(Card ** cards){
     }
     free(cards);
 }
+
 // draws a random card
 Card* draw_random(Card** cards){
     int rand_index = rand() % (PROMPT_COUNT-1); // generate random number between 0 and PROMPT_COUNT
@@ -50,31 +61,24 @@ Card* draw_random(Card** cards){
     return  cards[rand_index];
 }
 
-int main(){
-    FILE *prompt_file;
-    srand(time(NULL));
-
-    prompt_file = fopen("../../assets/prompts.txt","r");
-    if (!prompt_file){
-        perror("fopen");
+// free the specific drawn card
+void free_card(Card * card){
+    for(int i = 0; i < LOBBY_SIZE; i++){
+        free(card->responses[i]);
     }
-
-    Card ** cards = generate_cards(prompt_file);
-    
-    printf("card with prompt: %s \n",draw_random(cards)->prompt_text);
-
-    
-    // for(int i =0; i< 5;i++){
-    //     printf("card with prompt: %s ",cards[i]->prompt_text);
-    // }
-
-
-    free_cards(cards);
-    fclose(prompt_file);
-
-
-
-
-    return 1; 
+    free(card->responses);
+    return;
 }
+
+
+//code only for testing 
+// int main(){
+//     Card ** cards = generate_cards();
+//     printf("card with prompt: %s \n",draw_random(cards)->prompt_text);
+//     // for(int i =0; i< 5;i++){
+//     //     printf("card with prompt: %s ",cards[i]->prompt_text);
+//     // }
+//     free_cards(cards);
+//     return 1; 
+// }
 
