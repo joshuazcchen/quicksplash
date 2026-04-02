@@ -7,17 +7,6 @@
 #define PROMPT_COUNT 135
 
 typedef enum {
-    CLIENT_DISCONNECT = -2,
-    READ_FAIL = -1,
-    SEND_FAIL = -1,
-    READ_PARTIAL = 0,
-    READ_SUCCESS = 1,
-    SEND_SUCCESS = 1,
-    PARTIAL_READ_SUCCESS = 2,
-    TIMEOUT = 3
-} response;
-
-typedef enum {
     P_TEST = 1,
     P_JOIN = 2,
     P_LEAVE = 3,

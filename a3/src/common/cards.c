@@ -39,7 +39,7 @@ Card ** generate_cards(FILE * file){
 void free_cards(Card ** cards){
     for(int j = 0; j < PROMPT_COUNT;j++){
         free(cards[j]->prompt_text);
-        free(cards[j]); 
+        free(cards[j]);
     }
     free(cards);
 }
@@ -51,7 +51,7 @@ Card* draw_random(Card** cards){
 }
 
 int main(){
-    FILE *prompt_file; 
+    FILE *prompt_file;
     srand(time(NULL));
 
     prompt_file = fopen("../../assets/prompts.txt","r");
