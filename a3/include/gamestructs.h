@@ -28,6 +28,7 @@ typedef struct {
     char name[32];
 
     // idk how else to do this so ig we got a staging area now. getting closer to accidentally making git by the minute
+    Packet active;
     int ready;
     Packet partial;
     int inbuf;
@@ -43,8 +44,6 @@ typedef struct{
     char  * prompt_text; //prompt_text of the card
     Response ** responses; //array of player responses
 } Card;
-
-
 
 #endif
 
