@@ -6,7 +6,7 @@ CFLAGS = -Wall -Iinclude
 all: server client
 test: clean server test_client
 
-# ik this is incorrect kai it was just so i could test builds lol 
+# ik this is incorrect kai it was just so i could test builds lol
 server:
 	gcc -Wall -Iinclude src/server/init.c src/server/cards.c src/server/gamehandler.c src/server/server_comms.c src/server/lobby.c src/common/socket.c src/common/comms.c -o server
 
