@@ -10,7 +10,19 @@
 
 // code only for testing 
 int main(){
-    printf("balls \n");
-    printf("balls \n");
+
+    if (setup_game() == GAME_SUCCESS){
+        printf("CARDS INITIALIZED \n");
+    }
+    
+    if(game_loop(5) == GAME_SUCCESS){
+        printf("GOOD! \n");
+    }
+
+    if (wrap_up_game() == GAME_SUCCESS){
+        printf("GAME ENDED WOWWWWWWWWWWWWWWWWWWWWWWWWW\n");
+    }
+
+
     return 1; 
 }

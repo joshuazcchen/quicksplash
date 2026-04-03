@@ -11,7 +11,7 @@ Card** generate_cards() {
     FILE* prompt_file;
     srand(time(NULL));
 
-    prompt_file = fopen("../../assets/prompts.txt","r");
+    prompt_file = fopen("assets/prompts.txt","r");
     if (!prompt_file) {
         perror("fopen");
     }
@@ -71,14 +71,5 @@ void free_card(Card* card) {
 }
 
 
-//code only for testing 
-// int main(){
-//     Card ** cards = generate_cards();
-//     printf("card with prompt: %s \n",draw_random(cards)->prompt_text);
-//     // for(int i =0; i< 5;i++){
-//     //     printf("card with prompt: %s ",cards[i]->prompt_text);
-//     // }
-//     free_cards(cards);
-//     return 1; 
-// }
+
 
