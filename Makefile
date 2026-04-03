@@ -1,10 +1,9 @@
 # TODO: this  
 CFLAGS = -Wall -Iinclude
 
-.PHONY: all penis test
+.PHONY: all test
 
 all: server client
-penis: server client
 test: clean server test_client server_test
 
 # ik this is incorrect kai it was just so i could test builds lol
