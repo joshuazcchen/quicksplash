@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
     printf("%s\n", a.prompt_text);
     show_card_prompt(a);
 
-    printf("Starting to print widths");
+    printf("Starting to print widths\n");
     while (1) {
-      printf("%d", terminal_width);
+      printf("%d\n", terminal_width);
       sleep(1);
     }
 
