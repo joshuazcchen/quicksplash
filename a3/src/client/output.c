@@ -38,7 +38,7 @@ void show_card_prompt(Card card) {
   int horizontal_size = 36;
   printf("╭");
   display_n_times("─", horizontal_size);
-  printf("╮");
+  printf("╮\n");
 
   char* title = "NEW CARD";
   int left_pad = (horizontal_size - strlen(title)) / 2;
