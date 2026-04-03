@@ -36,13 +36,13 @@ typedef struct {
 
 typedef struct{
     Player player; // player sending the response 
-    char * response; // the response player typed in
+    char* response; // the response player typed in
 } Response;
 
 
 typedef struct{
-    char  * prompt_text; //prompt_text of the card
-    Response ** responses; //array of player responses
+    char* prompt_text; //prompt_text of the card
+    Response** responses; //array of player responses
 } Card;
 
 #endif

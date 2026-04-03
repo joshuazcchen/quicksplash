@@ -6,22 +6,23 @@ void display_title() {
 }
 
 void show_card_prompt(Card card) {
-  printf("╭────────────────────────────────────╮\n
-          │             NEW CARD               │
-          │Type a funny response to this       │
-          │sentence:                           │");
-  horizontal_size = 36;
-  char to_print[horizontal_size + 1]; // +1 for \0
+  printf("╭────────────────────────────────────╮\n\
+│             NEW CARD               │\n\
+│Type a funny response to this       │\n\
+│sentence:                           ");
+  int horizontal_size = 36;
   int i = 0;
-  for (i; card.prompt_text[i] != '\0'; i++) {
+  for (;(card.prompt_text)[i] != '\0'; i++) {
     if (i % horizontal_size == 0) {
       printf("│\n│");
     }
-    printf("%s", card.prompt_text[i]);
+    printf("%c", (card.prompt_text)[i]);
   }
   while (i % horizontal_size != 0) {
     printf(" ");
+    i++;
   }
   printf("│\n");
+  printf("╰────────────────────────────────────╯");
 }
 
