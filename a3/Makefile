@@ -4,9 +4,12 @@ CFLAGS = -Wall -Iinclude
 .PHONY: all test
 
 all: server client
-test: clean server test_client
+test: clean server test_client server_test
 
 # ik this is incorrect kai it was just so i could test builds lol
+server_test: 
+	gcc -Wall -Iinclude test/server_test.c src/server/cards.c src/server/gamehandler.c -o server_test
+
 server:
 	gcc -Wall -Iinclude src/server/init.c src/server/cards.c src/server/gamehandler.c src/server/server_comms.c src/server/lobby.c src/common/socket.c src/common/comms.c -o server
 
@@ -17,4 +20,4 @@ client:
 	echo "TODO"
 
 clean:
-	rm -f server client
+	rm -f server client server_test test_client
