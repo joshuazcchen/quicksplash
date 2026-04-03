@@ -22,7 +22,7 @@ void display_title() {
 }
 
 void display_n_times(char* to_disp, int n) {
-  for (int i = 0; i < n; i++) { printf(to_disp); }
+  for (int i = 0; i < n; i++) { printf("%s", to_disp); }
 }
 
 void justify_text_format(char* text_format, int min_char, int max_char, char* text) {
