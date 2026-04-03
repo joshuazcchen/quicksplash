@@ -27,7 +27,7 @@ Packet stop(int type, char* c) {
     Packet p;
     p.type = type;
     memset(p.data, '\0', BUFFERSIZE);
-    strncpy(p.data, c, BUFFERSIZE-c);
+    strncpy(p.data, c, BUFFERSIZE);
     p.data[BUFFERSIZE-1] = '\0';
     return p;
 }
