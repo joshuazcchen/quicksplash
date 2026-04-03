@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <string.h>
 #include "gamestructs.h"
+#include "client_output.h"
 
 volatile int terminal_width = 0; // force the program to read the latest value instead of a cached one
 
