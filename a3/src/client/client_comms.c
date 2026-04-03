@@ -4,6 +4,8 @@
 #include <string.h>
 #include "socket.h"
 
+extern int s_socket;
+
 Packet partial;
 int inbuf = 0;
 Packet active;
