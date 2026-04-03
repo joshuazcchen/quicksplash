@@ -11,7 +11,7 @@ server:
 	gcc -Wall -Iinclude src/server/init.c src/server/cards.c src/server/gamehandler.c src/server/server_comms.c src/server/lobby.c src/common/socket.c src/common/comms.c -o server
 
 test_client:
-	gcc -Wall -Iinclude test/client_test.c src/common/socket.c src/common/comms.c -o client
+	gcc -Wall -Iinclude test/client_test.c src/common/socket.c src/common/comms.c src/client/output.c -o client
 
 client:
 	echo "TODO"
