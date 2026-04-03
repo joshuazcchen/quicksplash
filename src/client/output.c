@@ -35,14 +35,14 @@ void justify_text_format(char* text_format, int min_char, int max_char, char* te
 }
 
 void show_card_prompt(Card card) {
-  int horizontal_size = 36;
+  int horizontal_size = terminal_width;
   printf("╭");
-  display_n_times("─", horizontal_size);
+  display_n_times("─", horizontal_size - 2);
   printf("╮\n");
 
   char* title = "NEW CARD";
-  int left_pad = (horizontal_size - strlen(title)) / 2;
-  int right_pad = (horizontal_size - strlen(title)) - left_pad;
+  int left_pad = (horizontal_size - 2 - strlen(title)) / 2;
+  int right_pad = (horizontal_size - 2 - strlen(title)) - left_pad;
   printf("│");
   display_n_times(" ", left_pad);
   printf("%s", title);
@@ -50,11 +50,11 @@ void show_card_prompt(Card card) {
   printf("│\n");
 
   char* desc = "Type a funny response to this sentence:";
-  justify_text_format("│%-*.*s│\n", horizontal_size, horizontal_size, desc);
-  justify_text_format("│%-*.*s│\n", horizontal_size, horizontal_size, card.prompt_text);
+  justify_text_format("│%-*.*s│\n", horizontal_size-2, horizontal_size-2, desc);
+  justify_text_format("│%-*.*s│\n", horizontal_size-2, horizontal_size-2, card.prompt_text);
 
   printf("╰");
-  display_n_times("─", horizontal_size);
+  display_n_times("─", horizontal_size-2);
   printf("╯\n");
 }
 
