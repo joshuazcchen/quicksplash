@@ -45,7 +45,7 @@ void show_card_prompt(Card card) {
   int right_pad = (horizontal_size - strlen(title)) - left_pad;
   printf("│");
   display_n_times(" ", left_pad);
-  printf(title);
+  printf("%s", title);
   display_n_times(" ", right_pad);
   printf("│\n");
 
