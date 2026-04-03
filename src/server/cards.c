@@ -7,26 +7,26 @@
 
 
 // generates the array of cards from the prompt file
-Card ** generate_cards(){
-    FILE *prompt_file;
+Card** generate_cards() {
+    FILE* prompt_file;
     srand(time(NULL));
 
-    prompt_file = fopen("../../assets/prompts.txt","r"); 
-    if (!prompt_file){
+    prompt_file = fopen("../../assets/prompts.txt","r");
+    if (!prompt_file) {
         perror("fopen");
     }
 
-    char prompt[MAX_PROMPT_SIZE]; 
-    Card **cards = malloc(sizeof(Card *) * (PROMPT_COUNT));
-    // generate an array of PROMPT_COUNT pointers 
+    char prompt[MAX_PROMPT_SIZE];
+    Card** cards = malloc(sizeof(Card *) * (PROMPT_COUNT));
+    // generate an array of PROMPT_COUNT pointers
     if (!cards) {
         perror("malloc");
         exit(1);
     }
-    
+
     int i = 0;
-    while(fgets(prompt,MAX_PROMPT_SIZE,prompt_file) != NULL && i < PROMPT_COUNT){
-        cards[i] = malloc(sizeof(Card)); // create a card object 
+    while(fgets(prompt,MAX_PROMPT_SIZE,prompt_file) != NULL && i < PROMPT_COUNT) {
+        cards[i] = malloc(sizeof(Card)); // create a card object
         if (!cards[i]) {
             perror("malloc");
             exit(1);
@@ -38,16 +38,16 @@ Card ** generate_cards(){
         }
         strncpy(cards[i]->prompt_text, prompt,(strlen(prompt))); // copy over data written in prompt read from file
         (cards[i]->prompt_text)[(strlen(prompt)-1)] = '\0'; // replace newline char with null term
-        i++; 
+        i++;
     }
     fclose(prompt_file);
 
-    return cards; 
+    return cards;
 }
 
 // free the array of cards
-void free_cards(Card ** cards){
-    for(int j = 0; j < PROMPT_COUNT;j++){
+void free_cards(Card ** cards) {
+    for(int j = 0; j < PROMPT_COUNT;j++) {
         free(cards[j]->prompt_text);
         free(cards[j]);
     }
@@ -55,15 +55,15 @@ void free_cards(Card ** cards){
 }
 
 // draws a random card
-Card* draw_random(Card** cards){
+Card* draw_random(Card** cards) {
     int rand_index = rand() % (PROMPT_COUNT-1); // generate random number between 0 and PROMPT_COUNT
     printf("the random number i rolled is: %d \n ", rand_index);
     return  cards[rand_index];
 }
 
 // free the specific drawn card
-void free_card(Card * card){
-    for(int i = 0; i < LOBBY_SIZE; i++){
+void free_card(Card* card) {
+    for(int i = 0; i < LOBBY_SIZE; i++) {
         free(card->responses[i]);
     }
     free(card->responses);
