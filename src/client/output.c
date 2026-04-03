@@ -27,10 +27,10 @@ void display_n_times(char* to_disp, int n) {
 
 void justify_text_format(char* text_format, int min_char, int max_char, char* text) {
   int i = 0;
-  int len = strlen(desc);
+  int len = strlen(text);
   do {
-    printf("│%-*.*s│\n", horizontal_size, horizontal_size, desc + i);
-    i += horizontal_size;
+    printf("│%-*.*s│\n", min_char, max_char, text + i);
+    i += min_char;
   } while (i < len);
 }
 
