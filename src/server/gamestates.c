@@ -138,4 +138,3 @@ response determine_game_winner(){
     printf("PLAYER: %d WINS GAME!",players[max_index].p_id);
     return GAME_SUCCESS;
 }
-

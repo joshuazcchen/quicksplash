@@ -44,4 +44,3 @@ int main() {
     free(self);
     return 0;
 }
-

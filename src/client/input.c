@@ -40,4 +40,3 @@ void get_str_to_ptr(char* ptr, int max_chars) {
         }
     }
 }
-
