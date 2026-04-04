@@ -48,10 +48,6 @@ response await_responses() {
     }
 	free(p.data);
 
-    if(s_send(ctop(*(drawn_card))) == GAME_SUCCESS){
-        printf("Sent messages to players\n");
-    }
-
     if(s_listen(60) == TIMEOUT){ // time limit to check for responses
         printf("responses recorded and timeout\n");
         for(int i = 0; i < LOBBY_SIZE; i++){
@@ -97,7 +93,8 @@ response initiate_vote() {
     
     // TODO: JOSHUA SEND THE RESPONSES TO THE PLAYERS
     // SEND ARRAY OF RESPONSES + PIDS TO PLAYERS 
-    if(s_send(ctop(*(drawn_card))) == GAME_SUCCESS){
+	Packet p = ctop(*(drawn_card));
+    if(s_send(&p) == GAME_SUCCESS){
         
         printf("Sent messages to players\n");
     }
@@ -107,7 +104,7 @@ response initiate_vote() {
             for(int j = 0; j < LOBBY_SIZE; j++){
                 //TODO: JOSHUA MAKE SURE DATA ONLY COSNISTS OF A SINGLE INT
                 // PLAYER REPLIES WITH INDEX THAT CORRESPONDS TO PID OF THE RESPONSE, SEND BACK JUST THE PID TO INCREMENT VOTE COUNT
-                if(drawn_card->responses[j]->player->p_id == (int)players[i].active.data){
+                if(drawn_card->responses[j]->player->p_id == strtol(players[i].active.data, NULL, 10)){
                     drawn_card->responses[j]->player->round_votes++; 
                 }
             }
