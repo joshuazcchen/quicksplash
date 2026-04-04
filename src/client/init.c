@@ -31,7 +31,7 @@ int main() {
 	response status = c_connect(s_port, s_address);
 	if (status == SEND_SUCCESS) {
 		Packet p = strtopkt(PKT_JOIN, name);
-		if (c_send(p) == SEND_SUCCESS) {
+		if (c_send(&p) == SEND_SUCCESS) {
 			printf("Joined as %s\n", name);
 		} else {
 			printf("Error in sending join packet\n");
@@ -40,7 +40,7 @@ int main() {
 		free(p.data);
 		sleep(2);
 		Packet pst = stop(PKT_START, "orange");
-		if (c_send(pst) == SEND_SUCCESS) {
+		if (c_send(&pst) == SEND_SUCCESS) {
 			printf("started game\n");
 		} else {
 			printf("bad packet");
@@ -49,6 +49,7 @@ int main() {
 		while (1) {
 			sleep(1);
 			if (c_read() == READ_SUCCESS && ready) {
+				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = ptoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text);
 				free(rec.prompt_text);

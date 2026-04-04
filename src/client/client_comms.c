@@ -15,7 +15,7 @@ int h_inbuf = 0;
 int p_inbuf = 0;
 int ready = 0;
 
-response c_send(Packet p) {
+response c_send(Packet *p) {
     return comms_send(s_socket, p);
 }
 
@@ -48,23 +48,22 @@ response c_read() {
 					printf("nothing in header len\n"); // i dont think i actually get an errno here because technically nothing sys went wrong.
 					exit(1); // this client is sending malformed headers so kill it before it can do more harm.
 				}
-			} else {
-				return ret;
-			}
+			} 
+			return ret;
 		}
 	}
 	// NOTE TO SELF: I MIGHT NEED A SLEEP HERE IM NOT SURE HOW QUICKLY I CAN SEND PACKETS IN SUCCESSION, I ASSUME THAT ITLL BE FINE SINCE THE PACKET AND PAYLOAD ARE EFFECTIVELY SENT RIGHT AFTER ONE ANOTHER.
 
 	// read payload
 	if (c_state == PAYLOAD) {
-		ret = comms_read(s_socket, &active.data, &p_inbuf, active.header.length);
+		ret = comms_read(s_socket, active.data, &p_inbuf, active.header.length);
 		if (ret == READ_SUCCESS) {
 			// if it succeeds we can just reset
 			printf("success here\n");
 			c_state = HEADER;
 			h_inbuf = 0;
 			p_inbuf = 0;
-			ready = 1
+			ready = 1;
 		}
 		return ret;
 	}
@@ -85,11 +84,11 @@ response c_read() {
 //}
 
 response c_connect(int port, char* addr) {
-    int s = connect_to_server(port, addr);
-    if (s) {
-        s_socket = s;
-        return SEND_SUCCESS;
-    } else {
-        return SEND_FAIL;
-    }
+	int s = connect_to_server(port, addr);
+	if (s) {
+		s_socket = s;
+		return SEND_SUCCESS;
+	} else {
+		return SEND_FAIL;
+	}
 }

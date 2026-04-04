@@ -76,26 +76,26 @@ void start_lobby(int listenfd) {
 							// not fully remembering how i did it before but 32 would null ptr error so were gonna not.
 							// swapped this to 31 instead of 32
                             players[i].name[31] = '\0';
-                            //players[i].state = READY;
-                            joined++;
-                            printf("%s joined properly\n", players[i].name);
-                        } else if (pkt->header.type == PKT_START) {
-                            // at least for testing im giving my player the ability to start the game.
-							// // TODO TODO: ADD VERIFICATION THAT ITS THE ACTUAL DEDICATED HOST CLIENT
-                            printf("success start game\n");
-                            started = 1;
-							free(pkt->data);
-							pkt->data = NULL;
-                            return;
-                        } else {
-                            printf("waiting for correct packet\n");
-                        }
-                    }
+							//players[i].state = READY;
+							joined++;
+							players[i].state = READY;
+							printf("%s joined properly\n", players[i].name);
+						} 
+					} else if (pkt->header.type == PKT_START) {
+						printf("success!!!!!\n");
+						// at least for testing im giving my player the ability to start the game.
+						// // TODO TODO: ADD VERIFICATION THAT ITS THE ACTUAL DEDICATED HOST CLIENT
+						printf("success start game\n");
+						started = 1;
+						free(pkt->data);
+						pkt->data = NULL;
+						return;
+					}
 					free(pkt->data);
 					pkt->data = NULL;
-                    players[i].ready = 0;
-                } else if (ret == CLIENT_DISCONNECT) {
-                    close(players[i].fd);
+					players[i].ready = 0;
+				} else if (ret == CLIENT_DISCONNECT) {
+					close(players[i].fd);
 					players[i].state = DISCONNECTED;
 					players[i].fd = -1;
 					if (players[i].active.data) {
@@ -105,9 +105,9 @@ void start_lobby(int listenfd) {
 					}
 					printf("Player disconnected\n");
 					// TODO: finish this
-                }
-            }
-        }
-    }
-    printf("woohoo\n");
+				}
+			}
+		}
+	}
+	printf("woohoo\n");
 }

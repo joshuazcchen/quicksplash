@@ -3,7 +3,7 @@ CFLAGS = -Wall -Iinclude
 
 .PHONY: all test
 
-all: server client
+all: clean server client
 test: clean server test_client server_test
 
 # ik this is incorrect kai it was just so i could test builds lol

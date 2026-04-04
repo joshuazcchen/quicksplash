@@ -16,7 +16,7 @@ typedef enum {
     P_REPLY = 5,
     P_VOTE = 6,
     P_STATS = 7,
-    P_START = 8
+    P_START = -3
 } p_type;
 
 typedef enum {
@@ -27,7 +27,7 @@ typedef enum {
 	PKT_REPLY = 5,
 	PKT_VOTE = 6,
 	PKT_STATS = 7,
-	PKT_START = 99,
+	PKT_START = 0,
 } pkt_type; // REDOING BECAUSE WE HAVE TOO MANY THINGS NAMED P_ LOL. PACKETS ARE NOW PKT
 
 typedef struct {
