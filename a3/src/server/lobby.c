@@ -48,6 +48,7 @@ void start_lobby(int listenfd) {
                         players[i].fd = fd_n;
                         players[i].inbuf = 0;
                         players[i].ready = 0;
+                        players[i].p_id = i; 
                         players[i].state = PENDING;
                         sprintf(players[i].name, "%d", i); // we gotta figure out how the join packet works but for now im just putting an int.
                         printf("player joined successfully\n");

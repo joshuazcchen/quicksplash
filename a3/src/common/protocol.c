@@ -1,6 +1,7 @@
 #include "gamestructs.h"
 #include "protocol.h"
 #include <string.h>
+#include <stdio.h>
 
 // idk if we need this to be an actual independent copy of the string, but i think it should be ok so long as the client never modifies it.
 char* ptos(Packet *p) {
@@ -18,7 +19,8 @@ Packet ctop(Card c) {
     Packet p;
     p.type = P_CARD;
     memset(p.data, '\0', BUFFERSIZE);
-    memcpy(p.data, &c, sizeof(Card));
+    strncpy(p.data, c.prompt_text, sizeof(char)*(strlen(c.prompt_text)+1));
+    printf("sending packet string: \n %s \n",p.data);
     return p;
 }
 

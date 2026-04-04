@@ -30,13 +30,13 @@ int main() {
         printf("CARDS INITIALIZED \n");
     }
 
-    while (1) {
-        sleep(1);
-        s_send(stop(P_JOIN, "lemongrass chicken"));
+    // while (1) {
+    //     sleep(1);
+    //     s_send(stop(P_JOIN, "lemongrass chicken"));
+    // }
+    if(game_loop(5) == GAME_SUCCESS){
+       printf("GOOD! \n");
     }
-    //if(game_loop(5) == GAME_SUCCESS){
-    //    printf("GOOD! \n");
-    //}
 
     if (wrap_up_game() == GAME_SUCCESS){
         printf("GAME ENDED WOWWWWWWWWWWWWWWWWWWWWWWWWW\n");

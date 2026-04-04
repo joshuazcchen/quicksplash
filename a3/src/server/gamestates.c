@@ -30,12 +30,12 @@ response await_responses() {
     drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
     for(int i = 0; i < LOBBY_SIZE; i++){
         drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
-        drawn_card->responses[i]->player = &(players[i]); // iterate through player array 
+        drawn_card->responses[i]->player = &players[i]; // iterate through player array 
+        printf("player pid: %d \n",drawn_card->responses[i]->player->p_id);
         drawn_card->responses[i]->response = NULL; 
     }
-
-    Packet prompt_message = ctop(*(drawn_card));
-    if(s_send(prompt_message) == GAME_SUCCESS){
+    
+    if(s_send(ctop(*(drawn_card))) == GAME_SUCCESS){
         printf("Sent messages to players \n");
     }
 
@@ -77,6 +77,9 @@ response player_leave() {
 }
 
 response initiate_vote() {
+
+
+
     return GAME_SUCCESS; 
 }
 
