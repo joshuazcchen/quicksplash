@@ -11,14 +11,21 @@
 extern Player players[LOBBY_SIZE];
 Card **cards;
 Card * drawn_card;
+
 // all logic of intializing the game should go here
 response setup_game() {
+    for(int i = 0; i < LOBBY_SIZE; i++){
+         players[i].round_wins = 0;
+    }
     cards = generate_cards();
     return GAME_SUCCESS;
 }
 
 // start the round of the game
 response play_round() {
+    for(int i = 0; i < LOBBY_SIZE; i++){
+         players[i].round_votes = 0;
+    }
     drawn_card = draw_random(cards);
     if(drawn_card != NULL){
         return GAME_SUCCESS;
@@ -63,6 +70,10 @@ response end_round() {
 }
 
 response wrap_up_game() {
+     for(int i = 0; i < LOBBY_SIZE; i++){
+         players[i].round_wins = 0;
+    }
+    cards = generate_cards();
     free_cards(cards);
     cards = NULL;
     return GAME_SUCCESS;
@@ -77,17 +88,48 @@ response player_leave() {
 }
 
 response initiate_vote() {
-
-
-
+    
+    // TODO: JOSHUA SEND THE RESPONSES TO THE PLAYERS
+    // SEND ARRAY OF RESPONSES + PIDS TO PLAYERS 
+    if(s_send(ctop(*(drawn_card))) == GAME_SUCCESS){
+        
+        printf("Sent messages to players\n");
+    }
+    if(s_listen(60) == TIMEOUT){ // time limit to check for responses
+        printf("responses recorded and timeout\n");
+        for(int i = 0; i < LOBBY_SIZE; i++){
+            for(int j = 0; j < LOBBY_SIZE; j++){
+                //TODO: JOSHUA MAKE SURE DATA ONLY COSNISTS OF A SINGLE INT
+                // PLAYER REPLIES WITH INDEX THAT CORRESPONDS TO PID OF THE RESPONSE, SEND BACK JUST THE PID TO INCREMENT VOTE COUNT
+                if(drawn_card->responses[j]->player->p_id == (int)players[i].active.data){
+                    drawn_card->responses[j]->player->round_votes++; 
+                }
+            }
+        }
+    }
     return GAME_SUCCESS;
 }
 
 response determine_round_winner(){
-        return GAME_SUCCESS;
+    int max_index = 0; 
+    for(int i = 1; i < LOBBY_SIZE; i++){
+        if(players[i-1].round_votes <= players[i].round_votes){
+            max_index = i;
+        }
+    }
+    printf("PLAYER: %d WINS ROUND!",players[max_index].p_id);
+    players[max_index].round_wins += 1;
+    return GAME_SUCCESS;
 }
 
 response determine_game_winner(){
-        return GAME_SUCCESS;
+    int max_index = 0; 
+    for(int i = 1; i < LOBBY_SIZE; i++){
+        if(players[i-1].round_wins <= players[i].round_wins){
+            max_index = i;
+        }
+    }
+    printf("PLAYER: %d WINS GAME!",players[max_index].p_id);
+    return GAME_SUCCESS;
 }
 
