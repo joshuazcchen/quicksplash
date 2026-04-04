@@ -40,6 +40,10 @@ typedef struct {
     Packet partial;
     int inbuf;
     p_state state;
+
+    int round_votes; 
+    int round_wins;
+
 } Player;
 
 typedef struct{
@@ -52,6 +56,9 @@ typedef struct{
     char* prompt_text; //prompt_text of the card
     Response** responses; //array of player responses
 } Card;
+
+
+
 
 #endif
 
