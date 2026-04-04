@@ -20,7 +20,7 @@ response comms_read(int fd, void *buf, int *inbuf, int target) {
     if (room <= 0) {
         return READ_SUCCESS; // yooooo in this case it literally means a SUCCESS not a FAILURE anymore hahahahahaha
     }
-    int nbytes = recv(fd, (char*)partial + *inbuf, room, MSG_DONTWAIT);
+    int nbytes = recv(fd, (char*)buf + *inbuf, room, MSG_DONTWAIT);
     if (nbytes == 0) {
         return CLIENT_DISCONNECT; // if we dont receive anything, clients probably dead so lets treat them as dead
 								  // this is not different from the old versio njsut commenting in now so that its easier to

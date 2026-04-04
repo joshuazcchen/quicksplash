@@ -16,8 +16,9 @@ typedef enum {
 } response;
 
 // TODO: move comment from comms.c to here abt returns
-response comms_read(int fd, Packet *partial, int *inbuf);
+// i do not remember AT ALL what i meant by that above comment. but it probably doesnt matter anymore because of the new system.
+response comms_read(int fd, void* buf, int *inbuf, int target);
 
-response comms_send(int fd, Packet p);
+response comms_send(int fd, Packet *p);
 #endif
 

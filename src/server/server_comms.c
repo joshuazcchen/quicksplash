@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
 
 // TODO: swap this so its just an extern?
 #define LOBBY_SIZE 5
@@ -13,7 +14,7 @@ extern Player players[LOBBY_SIZE];
 
 // sends a packet from the server to each of the clients.
 // it is imperative that the client does not edit this. i dont think itll actually break anything, but it is probably just best convention
-response s_send(Packet p) {
+response s_send(Packet *p) {
     for (int i = 0; i < LOBBY_SIZE; i++) {
 		// same check as before but i figure its good to comment:
 		// this basically just verifies that its not trying to write to the host stdin/stdout/stderr
@@ -65,7 +66,7 @@ response s_read(Player *p) {
 	}
 
 	if (p->c_state == PAYLOAD) {
-		ret = comms_read(p->fd, p->active.data, &p->p_inbuf, p->active.header.length);
+		ret = comms_read(p->fd, &p->active.data, &p->p_inbuf, p->active.header.length);
 		if (ret == READ_SUCCESS) {
 			p->c_state = HEADER;
 			p->h_inbuf = 0;

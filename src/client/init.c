@@ -30,25 +30,31 @@ int main() {
 
 	response status = c_connect(s_port, s_address);
 	if (status == SEND_SUCCESS) {
-		Packet p = stop(P_JOIN, name);
+		Packet p = strtopkt(PKT_JOIN, name);
 		if (c_send(p) == SEND_SUCCESS) {
 			printf("Joined as %s\n", name);
 		} else {
 			printf("Error in sending join packet\n");
 			exit(1);
 		}
+		free(p.data);
 		sleep(2);
-		Packet pst = stop(P_START, "orange");
+		Packet pst = stop(PKT_START, "orange");
 		if (c_send(pst) == SEND_SUCCESS) {
 			printf("started game\n");
 		} else {
 			printf("bad packet");
 		}
+		free(pst.data);
 		while (1) {
 			sleep(1);
 			if (c_read() == READ_SUCCESS && ready) {
 				Card rec = ptoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text);
+				free(rec.prompt_text);
+				free(active.data);
+				active.data = NULL;
+				ready = 0;
 			}
 		}
 	}
