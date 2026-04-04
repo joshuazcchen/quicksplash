@@ -1,5 +1,5 @@
 CC ?= gcc
-CFLAGS ?= -Wall -g -Iinclude
+CFLAGS ?= -Wall -Wextra -g -Iinclude
 LDFLAGS ?=
 LDLIBS ?=
 
