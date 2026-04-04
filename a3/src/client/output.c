@@ -1,19 +1,24 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 #include "gamestructs.h"
 #include "client_output.h"
 #include "client_input.h"
 #include "output.h"
 
 volatile int terminal_width = 0; // force the program to read the latest value instead of a cached one
+volatile sig_atomic_t needs_redraw = 0;
 
 void update_size(int sig) {
+	(void)sig;
 	struct winsize w;
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
 		terminal_width = w.ws_col;
+		needs_redraw = 1;
 	} else {
 		perror("ioctl");
 	}
@@ -89,76 +94,166 @@ void clear_screen() {
 	printf("\033[2J\033[H\n");
 }
 
-void server_select(char* name, char* port, char* addr) {
+static int server_select_panel_width(int width) {
+	if (width >= 72) return 68;
+	if (width >= 40) return width - 4;
+	return width;
+}
+
+static int server_select_left_pad(int width, int panel_width) {
+	int left_pad = (width - panel_width) / 2;
+	if (left_pad < 0) left_pad = 0;
+	return left_pad;
+}
+
+static void set_default_guest_username(char* name, int name_cap) {
+	static int seeded = 0;
+	int suffix;
+
+	if (strlen(name) > 0) return;
+
+	if (!seeded) {
+		srand((unsigned int)(time(NULL) ^ getpid()));
+		seeded = 1;
+	}
+
+	suffix = (rand() % 90000) + 10000;
+	snprintf(name, name_cap, "Guest%d", suffix);
+}
+
+static void box_print_border(const char* start_pad, const char* color, const char* left, const char* hchar, const char* right, int inner_width) {
 	const char* reset = "\033[0m";
-	const char* accent = "\033[1;36m";
-	const char* soft = "\033[2;37m";
-	const char* strong = "\033[1;97m";
+	printf("%s%s%s", start_pad, color, left);
+	display_n_times((char*)hchar, inner_width);
+	printf("%s%s\n", right, reset);
+}
+
+static void box_print_line(const char* start_pad, const char* border_color, const char* text_color, int inner_width, const char* text) {
+	const char* reset = "\033[0m";
+	int text_len = strlen(text);
+	int shown = (text_len > inner_width) ? inner_width : text_len;
+
+	printf("%s%s║%s", start_pad, border_color, text_color);
+	printf("%.*s", shown, text);
+	printf("%s", reset);
+	if (inner_width > shown) display_n_times(" ", inner_width - shown);
+	printf("%s║%s\n", border_color, reset);
+}
+
+static void box_print_fill(const char* start_pad, const char* border_color, const char* fill_color, int inner_width, const char* fill_char) {
+	const char* reset = "\033[0m";
+	printf("%s%s║%s", start_pad, border_color, fill_color);
+	display_n_times((char*)fill_char, inner_width);
+	printf("%s%s║%s\n", reset, border_color, reset);
+}
+
+static void server_select_render(char* name, char* port, char* addr, int active_field) {
+	const char* border = "\033[1;34m";
+	const char* title = "\033[1;96m";
+	const char* info = "\033[0;37m";
+	const char* muted = "\033[2;37m";
+	const char* active = "\033[1;33m";
+	const char* value = "\033[1;97m";
+	const char* separator = "\033[0;36m";
 
 	int width = terminal_width;
 	if (width <= 0) width = 80;
 
-	int panel_width;
-	if (width >= 72) {
-		panel_width = 68;
-	} else if (width >= 40) {
-		panel_width = width - 4;
-	} else {
-		panel_width = width;
-	}
-
-	int left_pad = (width - panel_width) / 2;
-	if (left_pad < 0) left_pad = 0;
+	int panel_width = server_select_panel_width(width);
+	int left_pad = server_select_left_pad(width, panel_width);
 
 	char start_pad[left_pad + 1];
 	memset(start_pad, ' ', left_pad);
 	start_pad[left_pad] = '\0';
+	int inner_width = panel_width - 2;
+	char line[256];
+	const char* marker0 = (active_field == 0) ? ">" : "-";
+	const char* marker1 = (active_field == 1) ? ">" : "-";
+	const char* marker2 = (active_field == 2) ? ">" : "-";
 
 	clear_screen();
 
 	if (panel_width >= 30) {
-		int inner_width = panel_width - 2;
-		const char* info = "  Fill in the fields. Press Enter to use defaults.";
-		printf("%s%s╭", start_pad, accent);
-		display_n_times("─", panel_width - 2);
-		printf("╮%s\n", reset);
-		printf("%s%s│  QUICK SPLASH: LOBBY CONNECT", start_pad, accent);
-		display_n_times(" ", panel_width - 31);
-		printf("│%s\n", reset);
-		printf("%s%s│", start_pad, accent);
-		display_n_times(" ", panel_width - 2);
-		printf("│%s\n", reset);
-		if (inner_width >= (int)strlen(info)) {
-			printf("%s%s│%s%s%s", start_pad, accent, soft, info, reset);
-			display_n_times(" ", inner_width - strlen(info));
-			printf("%s│%s\n", accent, reset);
-		} else {
-			printf("%s%s│%s Fill in fields and press Enter for defaults.%s", start_pad, accent, soft, reset);
-			printf("%s│%s\n", accent, reset);
-		}
-		printf("%s%s╰", start_pad, accent);
-		display_n_times("─", panel_width - 2);
-		printf("╯%s\n\n", reset);
+		box_print_border(start_pad, border, "╔", "═", "╗", inner_width);
+		box_print_line(start_pad, border, title, inner_width, "  QUICK SPLASH // JOIN LOBBY WITH IP");
+		box_print_fill(start_pad, border, separator, inner_width, "◦");
+		box_print_line(start_pad, border, info, inner_width, "  Fill in fields. Press Enter to keep defaults.");
+		box_print_line(start_pad, border, muted, inner_width, "");
+
+		snprintf(line, sizeof(line), " %s Username  : %s", marker0, (strlen(name) > 0 ? name : "[pending]"));
+		box_print_line(start_pad, border, (active_field == 0 ? active : value), inner_width, line);
+		snprintf(line, sizeof(line), " %s Port      : %s", marker1, (strlen(port) > 0 ? port : "[pending]"));
+		box_print_line(start_pad, border, (active_field == 1 ? active : value), inner_width, line);
+		snprintf(line, sizeof(line), " %s Server    : %s", marker2, (strlen(addr) > 0 ? addr : "[pending]"));
+		box_print_line(start_pad, border, (active_field == 2 ? active : value), inner_width, line);
+
+		box_print_border(start_pad, border, "╚", "═", "╝", inner_width);
+		printf("\n");
 	} else {
-		printf("%sQuick Splash Lobby Connect\n\n", strong);
+		printf("%sQuick Splash Lobby Check-In\n", title);
+		printf("Username: %s\n", (strlen(name) > 0 ? name : "[pending]"));
+		printf("Port: %s\n", (strlen(port) > 0 ? port : "[pending]"));
+		printf("Server: %s\n\n", (strlen(addr) > 0 ? addr : "[pending]"));
 	}
+}
 
-	printf("%s%sUsername%s\n", start_pad, strong, reset);
-	printf("%s%s→ %s", start_pad, accent, reset);
+void server_select(char* name, char* port, char* addr) {
+	const char* reset = "\033[0m";
+	const char* accent = "\033[1;33m";
+	const char* soft = "\033[2;37m";
+	const char* good = "\033[1;32m";
+	int width, panel_width, left_pad;
+	char start_pad[128];
+
+	needs_redraw = 0;
+	server_select_render(name, port, addr, 0);
+	width = terminal_width;
+	if (width <= 0) width = 80;
+	panel_width = server_select_panel_width(width);
+	left_pad = server_select_left_pad(width, panel_width);
+	if (left_pad > 127) left_pad = 127;
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
+	printf("%s%s→ %s%s(default Guest##### | max 31 chars)%s ", start_pad, accent, reset, soft, reset);
 	get_str_to_ptr(name, 32);
+	set_default_guest_username(name, 32);
 
-	printf("\n%s%sPort%s %s(default 30000)%s\n", start_pad, strong, reset, soft, reset);
-	printf("%s%s→ %s", start_pad, accent, reset);
+	if (needs_redraw) needs_redraw = 0;
+	server_select_render(name, port, addr, 1);
+	width = terminal_width;
+	if (width <= 0) width = 80;
+	panel_width = server_select_panel_width(width);
+	left_pad = server_select_left_pad(width, panel_width);
+	if (left_pad > 127) left_pad = 127;
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
+	printf("%s%s→ %s%s(default 30000 | max 6 chars)%s ", start_pad, accent, reset, good, reset);
 	get_str_to_ptr(port, 7);
-
-	printf("\n%s%sServer%s %s(default 127.0.0.1)%s\n", start_pad, strong, reset, soft, reset);
-	printf("%s%s→ %s", start_pad, accent, reset);
-	get_str_to_ptr(addr, 30);
-
 	if (strlen(port) == 0) strcpy(port, "30000");
+
+	if (needs_redraw) needs_redraw = 0;
+	server_select_render(name, port, addr, 2);
+	width = terminal_width;
+	if (width <= 0) width = 80;
+	panel_width = server_select_panel_width(width);
+	left_pad = server_select_left_pad(width, panel_width);
+	if (left_pad > 127) left_pad = 127;
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
+	printf("%s%s→ %s%s(default 127.0.0.1 | max 29 chars)%s ", start_pad, accent, reset, good, reset);
+	get_str_to_ptr(addr, 30);
 	if (strlen(addr) == 0) strcpy(addr, "127.0.0.1");
 
-	printf("\n%s%sConnecting...%s\n", start_pad, accent, reset);
+	server_select_render(name, port, addr, 3);
+	width = terminal_width;
+	if (width <= 0) width = 80;
+	panel_width = server_select_panel_width(width);
+	left_pad = server_select_left_pad(width, panel_width);
+	if (left_pad > 127) left_pad = 127;
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
+
+	printf("\n%s%sThanks for input! You'll be joining promptly...%s\n", start_pad, accent, reset);
 
 	char buf[sizeof("Connecting to : as ") + 30 + 7 + 32];
 	snprintf(buf, sizeof(buf), "Connecting to %s:%s as %s", addr, port, name);
