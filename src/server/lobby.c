@@ -30,7 +30,7 @@ void start_lobby(int listenfd) {
 		players[i].active.data = NULL;
         memset(players[i].name, '\0', 32);
     }
-    
+
     int started = 0;
     int joined = 0;
 
@@ -41,7 +41,7 @@ void start_lobby(int listenfd) {
         }
 
         if (FD_ISSET(listenfd, &read_fds)) {
-            int fd_n = accept_connection(listenfd);
+	        int fd_n = accept_connection(listenfd);
             if (fd_n != -1) {
                 FD_SET(fd_n, &fds);
                 if (fd_n > max_fd) max_fd = fd_n;
@@ -109,5 +109,6 @@ void start_lobby(int listenfd) {
 			}
 		}
 	}
-	printf("woohoo\n");
+//	printf("woohoo\n");
 }
+

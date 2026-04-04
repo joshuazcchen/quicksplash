@@ -71,6 +71,10 @@ typedef struct player { // have to have the player alias at the top too so we ca
 	int h_inbuf; // header inbuf
 	int p_inbuf; // actual packet/payload inbuf
 	int ready;
+
+    int round_votes; 
+    int round_wins;
+
 } Player;
 
 typedef struct{
@@ -83,6 +87,5 @@ typedef struct{
     char* prompt_text; //prompt_text of the card
     Response** responses; //array of player responses
 } Card;
-
 #endif
 
