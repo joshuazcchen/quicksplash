@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "output.h"
 #include <stdlib.h>
+#include "client_input.h"
 
 int main(int argc, char *argv[]) {
     if (init_display() != 0) {
@@ -20,11 +21,17 @@ int main(int argc, char *argv[]) {
     printf("%s\n", a.prompt_text);
     show_card_prompt(a);
 
-    printf("Starting to print widths\n");
     while (1) {
-      printf("%d\n", terminal_width);
-      sleep(1);
+      char response[11];
+      strcpy(response, get_text_input("I need input", 10));
+      printf("%s\n", response);
     }
+
+    // printf("Starting to print widths\n");
+    // while (1) {
+    //   printf("%d\n", terminal_width);
+    //   sleep(1);
+    // }
 
     // int s = connect_to_server(30000, "127.0.0.1");
     printf("success join");
