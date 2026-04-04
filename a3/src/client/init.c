@@ -48,7 +48,13 @@ int main() {
 			sleep(1);
 			if (c_read() == READ_SUCCESS && ready) {
 				Card rec = ptoc(&active);
-				printf("\ncard got: %s\n", rec.prompt_text);
+				if (active.type == P_CARD) {
+					show_card_prompt(rec);
+				} else if (active.type == P_VOTE) {
+					show_vote_card(rec, LOBBY_SIZE);
+				} else {
+					printf("\npacket type %d data: %s\n", active.type, rec.prompt_text);
+				}
 			}
 		}
 	}
