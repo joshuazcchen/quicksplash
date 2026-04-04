@@ -6,15 +6,20 @@
 #include "output.h"
 #include "client_comms.h"
 #include "client_input.h"
+#include "protocol.h"
 #include <string.h>
+#include <unistd.h>
 
 int s_socket = -1;
+extern Packet active;
+extern int ready; 
 
 int main() {
 	if (init_display() != 0) {
 		fprintf(stderr, "Error while initializing display");
 		exit(1);
 	}
+	// temporary, but gets the users name, the port they want to connect to and their address they want to connect to
 	printf("temporary: what name? (32):\n");
 	char name[32]; // how many characters do we want the maximum name legnth to be?
 	get_str_to_ptr(name, 32);
@@ -25,11 +30,33 @@ int main() {
 	char s_address[30];
 	get_str_to_ptr(s_address, 30);
 	printf("\n");
+	// connects
 	response status = c_connect(strtol(port, NULL, 10), s_address);
 	if (status == SEND_SUCCESS) {
-		printf("connection successfullllererkafjksjadfk\n");
+		// TODO: send packet to host containing name
+		Packet p = stop(P_JOIN, name); // once again we need a better name for this, string to packet.	
+		if (c_send(p) == SEND_SUCCESS) {
+			printf("great ok client ready\n");
+		} else {
+			printf("bad\n");
+		}
+		sleep(2);
+		Packet pst = stop(P_START, "orange");
+		if (c_send(pst) == SEND_SUCCESS) {
+			printf("started\n");
+		} else {
+			printf("bad");
+		}
+		while (1) {
+			sleep(1);
+			printf("asdkkasdfa\n");
+			if (c_read() == READ_SUCCESS && ready) {
+				printf("successfully read packet");
+				printf("%s", ptos(&active));
+			}
+		}
 	} else {
-		printf("no");
+		printf("no\n");
 		exit(1);
 	}
 	return 0;
