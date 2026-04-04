@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
       char response[11];
       strcpy(response, get_text_input("I need input", 10));
       printf("%s\n", response);
+      free(response);
     }
 
     // printf("Starting to print widths\n");
