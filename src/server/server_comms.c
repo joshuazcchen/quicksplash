@@ -24,7 +24,7 @@ response s_send(Packet p) {
 response s_read(Player *p) {
     response ret = comms_read(p->fd, &p->partial, &p->inbuf);
     if (ret == READ_SUCCESS) {
-        printf("made it here\n");
+        // printf("made it here\n");
         memcpy(&p->active, &p->partial, sizeof(Packet));
         p->inbuf = 0;
         p->ready = 1;
@@ -35,7 +35,7 @@ response s_read(Player *p) {
 // ok theres actually no way to respond here properly tbh lol
 response s_listen(int max_time) {
     time_t start = time(NULL);
-    
+
     // repeat for max_time time until time out or everyone has answered.
     // in case of client disconnect, you will just have to wait out the max_time.
     // however we could probably make that work better by using signals or smth?

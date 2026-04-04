@@ -25,7 +25,7 @@ void start_lobby(int listenfd) {
         players[i].state = DISCONNECTED;
         memset(players[i].name, '\0', 32);
     }
-    
+
     int started = 0;
     int joined = 0;
 
@@ -48,10 +48,10 @@ void start_lobby(int listenfd) {
                         players[i].fd = fd_n;
                         players[i].inbuf = 0;
                         players[i].ready = 0;
-                        players[i].p_id = i+1; 
+                        players[i].p_id = i+1;
                         players[i].state = PENDING;
                         sprintf(players[i].name, "%d", i); // we gotta figure out how the join packet works but for now im just putting an int.
-                        printf("player joined successfully\n");
+                        printf("%s joined successfully\n", players[i].name);
                         break;
                     }
                 }
@@ -64,7 +64,7 @@ void start_lobby(int listenfd) {
                 sleep(1);
                 printf("%d", ret);
                 if (ret == READ_SUCCESS && players[i].ready) {
-                    printf("here\n");
+                    // printf("here\n");
                     Packet *pkt = &players[i].active;
                     if (players[i].state == PENDING) {
                         if (pkt->type == P_JOIN) {
@@ -84,7 +84,7 @@ void start_lobby(int listenfd) {
                     }
                     players[i].ready = 0;
                 } else if (ret == -2) {
-                    printf("player disconnected");
+                    printf("player %s disconnected", players[i].name);
                     close(players[i].fd);
                 // TODO: finish this
                 }
@@ -93,3 +93,4 @@ void start_lobby(int listenfd) {
     }
     printf("woohoo\n");
 }
+
