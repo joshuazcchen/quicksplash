@@ -29,7 +29,6 @@ void get_str_to_ptr(char* ptr, int max_chars) {
 		exit(1);
 	}
     ptr[strcspn(ptr, "\n")] = '\0';
-//	int c;
-//	while ((c = getchar()) != '\n' && c != EOF);
-//	return;
+	int c;
+	while ((c = getchar()) != '\n' && c != EOF);
 }
