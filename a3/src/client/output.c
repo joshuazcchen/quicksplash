@@ -90,72 +90,77 @@ void clear_screen() {
 }
 
 void server_select(char* name, char* port, char* addr) {
-	printf("\n\033[44m\033[1;37m"); // blue with white text
-	display_n_times(" ", terminal_width);
-	printf("\n");
-	if (terminal_width > 12) {
-		center_text_display("join a lobby");
-	} else {
-		printf("join a lobby\n");
-	}
-	display_n_times(" ", terminal_width);
-	printf("\033[0m\n"); // reset
-	printf("\033[1;32m"); // i dont know colour theory man, green ig
-	if (terminal_width > 12) {
-	    center_text_display("user");	
-		printf("\n\n");
-		// display_n_times(" ", terminal_width);
-	} else {
-		printf("user\n");
-	}
-    int input_offset = terminal_width / 2 - 6;
-	display_n_times(" ", input_offset);
-	printf("> ");
-    get_str_to_ptr(name, 32);
+	const char* reset = "\033[0m";
+	const char* accent = "\033[1;36m";
+	const char* soft = "\033[2;37m";
+	const char* strong = "\033[1;97m";
 
-	printf("\033[0m\n"); // reset
-	printf("\033[1;32m"); // i dont know colour theory man, green ig
-	if (terminal_width > 12) {
-        center_text_display("port");
-		printf("\n\n");
-		// display_n_times(" ", (int)(terminal_width - 12) / 2);
-	} else {
-		printf("port\n");
-	}
-	display_n_times(" ", input_offset);
-	printf("> ");
-    get_str_to_ptr(port, 7);
+	int width = terminal_width;
+	if (width <= 0) width = 80;
 
-	printf("\033[0m\n"); // reset
-	printf("\033[1;32m"); // i dont know colour theory man, green ig
-	if (terminal_width > 12) {
-        center_text_display("server");
-		printf("\n\n");
-		// display_n_times(" ", (int)(terminal_width - 12) / 2);
+	int panel_width;
+	if (width >= 72) {
+		panel_width = 68;
+	} else if (width >= 40) {
+		panel_width = width - 4;
 	} else {
-		printf("server\n");
-    }
-	display_n_times(" ", input_offset);
-	printf("> ");
-    get_str_to_ptr(addr, 30);
-
-    // Default replacements
-    if (strlen(port) == 0) strcpy(port, "30000");
-    if (strlen(addr) == 0) strcpy(addr, "127.0.0.1");
-	printf("\033[1;32m");
-	printf("\n\033[44m\033[1;37m"); // blue with white text
-	display_n_times(" ", terminal_width);
-	printf("\n");
-	if (terminal_width > 16) {
-        center_text_display("joining lobby");
-	} else {
-		printf("joining lobby\n");
+		panel_width = width;
 	}
-	display_n_times(" ", terminal_width);
-    printf("\n\n");
-    char buf[sizeof("Connecting to : as ") + 30 + 7 + 32];
-    sprintf(buf, "Connecting to %s:%s as %s", addr, port, name);
-    center_text_display(buf);
-    printf("\033[0m\n");
+
+	int left_pad = (width - panel_width) / 2;
+	if (left_pad < 0) left_pad = 0;
+
+	char start_pad[left_pad + 1];
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
+
+	clear_screen();
+
+	if (panel_width >= 30) {
+		int inner_width = panel_width - 2;
+		const char* info = "  Fill in the fields. Press Enter to use defaults.";
+		printf("%s%s╭", start_pad, accent);
+		display_n_times("─", panel_width - 2);
+		printf("╮%s\n", reset);
+		printf("%s%s│  QUICK SPLASH: LOBBY CONNECT", start_pad, accent);
+		display_n_times(" ", panel_width - 31);
+		printf("│%s\n", reset);
+		printf("%s%s│", start_pad, accent);
+		display_n_times(" ", panel_width - 2);
+		printf("│%s\n", reset);
+		if (inner_width >= (int)strlen(info)) {
+			printf("%s%s│%s%s%s", start_pad, accent, soft, info, reset);
+			display_n_times(" ", inner_width - strlen(info));
+			printf("%s│%s\n", accent, reset);
+		} else {
+			printf("%s%s│%s Fill in fields and press Enter for defaults.%s", start_pad, accent, soft, reset);
+			printf("%s│%s\n", accent, reset);
+		}
+		printf("%s%s╰", start_pad, accent);
+		display_n_times("─", panel_width - 2);
+		printf("╯%s\n\n", reset);
+	} else {
+		printf("%sQuick Splash Lobby Connect\n\n", strong);
+	}
+
+	printf("%s%sUsername%s\n", start_pad, strong, reset);
+	printf("%s%s→ %s", start_pad, accent, reset);
+	get_str_to_ptr(name, 32);
+
+	printf("\n%s%sPort%s %s(default 30000)%s\n", start_pad, strong, reset, soft, reset);
+	printf("%s%s→ %s", start_pad, accent, reset);
+	get_str_to_ptr(port, 7);
+
+	printf("\n%s%sServer%s %s(default 127.0.0.1)%s\n", start_pad, strong, reset, soft, reset);
+	printf("%s%s→ %s", start_pad, accent, reset);
+	get_str_to_ptr(addr, 30);
+
+	if (strlen(port) == 0) strcpy(port, "30000");
+	if (strlen(addr) == 0) strcpy(addr, "127.0.0.1");
+
+	printf("\n%s%sConnecting...%s\n", start_pad, accent, reset);
+
+	char buf[sizeof("Connecting to : as ") + 30 + 7 + 32];
+	snprintf(buf, sizeof(buf), "Connecting to %s:%s as %s", addr, port, name);
+	printf("%s%s%s%s\n", start_pad, soft, buf, reset);
 }
-
