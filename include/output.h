@@ -18,4 +18,3 @@ void clear_screen();
 void server_select(char* name, char* port, char* addr);
 
 #endif
-

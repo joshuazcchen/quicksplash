@@ -69,4 +69,3 @@ void free_card(Card* card) {
     free(card->responses);
     return;
 }
-
