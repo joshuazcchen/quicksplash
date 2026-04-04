@@ -6,6 +6,7 @@
 #define MAX_RESPONSE_SIZE 256
 #define PROMPT_COUNT 135
 #define LOBBY_SIZE 5
+#include <stdint.h>
 
 typedef enum {
     P_TEST = 1,
@@ -31,6 +32,7 @@ typedef struct {
 
 typedef struct {
 	pkt_type type;
+	// also this could probably just end up being subbed out for a short but if this isnt actually truly 16 bits then everything else will absolutely vapourize itself. MIGHT AS WELL IMPORT SMTH JUST TO BE SAFE LOL
 	uint16_t length; // maximum of 65k ish but if we ever need more length, we can always update this accordingly.
 					 // moreso like this just so if we ever end up with a faulty client they can only ever really freeze server for 65k bytes at a given time (65kb  is basically instant lol).
 } PacketHeader;
