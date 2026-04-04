@@ -10,5 +10,8 @@ void justify_text_format(char* text_format, int min_char, int max_char, char* te
 void show_card_prompt(Card card);
 int init_display();
 
+void clear_screen();
+void server_select(char* name, char* port, char* addr);
+
 #endif
 
