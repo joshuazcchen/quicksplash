@@ -33,7 +33,6 @@ int main() {
 	// connects
 	response status = c_connect(strtol(port, NULL, 10), s_address);
 	if (status == SEND_SUCCESS) {
-		// TODO: send packet to host containing name
 		Packet p = stop(P_JOIN, name); // once again we need a better name for this, string to packet.	
 		if (c_send(p) == SEND_SUCCESS) {
 			printf("great ok client ready\n");
@@ -49,10 +48,8 @@ int main() {
 		}
 		while (1) {
 			sleep(1);
-			printf("asdkkasdfa\n");
 			if (c_read() == READ_SUCCESS && ready) {
-				printf("successfully read packet");
-				printf("%s", ptoc(&active).prompt_text);
+				printf("%s\n", ptoc(&active).prompt_text);
 			}
 		}
 	} else {

@@ -2,6 +2,7 @@
 #include "protocol.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // idk if we need this to be an actual independent copy of the string, but i think it should be ok so long as the client never modifies it.
 char* ptos(Packet *p) {
@@ -11,7 +12,9 @@ char* ptos(Packet *p) {
 
 Card ptoc(Packet *p) {
     Card c;
-    memcpy(&c, p->data, sizeof(Card));
+    memset(&c, 0, sizeof(Card));
+    c.prompt_text = malloc(strlen(p->data) + 1);
+    strcpy(c.prompt_text, p->data);
     return c;
 }
 
