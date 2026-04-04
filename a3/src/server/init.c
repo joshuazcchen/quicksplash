@@ -12,11 +12,10 @@
 #include <unistd.h>
 #include "server_comms.h"
 #include "protocol.h"
+#include "lobby.h"
 
 #define LOBBY_SIZE 5 // i swear to god ive defined this thing in like three different files. TODO: MOVE IT SOMEWHERE PERMANENTLY. IT MAKES SENSE HERE BUT NOT REALLY.
 Player players[LOBBY_SIZE];
-
-void start_lobby(int listenfd); // TODO: move this to a header
 
 int main() {
     struct sockaddr_in *self = init_server_addr(30000); // i have zero clue why its meant to be 30,000 but the one on the csc209 lab 10 used it. if someone else knows, can they fix thsi magic num
@@ -24,10 +23,10 @@ int main() {
     int listenfd = set_up_server_socket(self, 5);
     
     start_lobby(listenfd);
-    printf("made it here\n");
+    printf("Lobby ready -> proceeding to game\n");
 
     if (setup_game() == GAME_SUCCESS){
-        printf("CARDS INITIALIZED \n");
+        printf("CARDS INITIALIZED\n");
     }
 
     // while (1) {
@@ -35,7 +34,7 @@ int main() {
     //     s_send(stop(P_JOIN, "lemongrass chicken"));
     // }
     if(game_loop(5) == GAME_SUCCESS){
-       printf("GOOD! \n");
+       printf("GOOD!\n");
     }
 
     if (wrap_up_game() == GAME_SUCCESS){
@@ -45,3 +44,4 @@ int main() {
     free(self);
     return 0;
 }
+

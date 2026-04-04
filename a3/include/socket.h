@@ -1,4 +1,5 @@
 // this is the helper function from lab 10
+// this is a header joshua
 
 #ifndef _SOCKET_H_
 #define _SOCKET_H_
@@ -12,3 +13,4 @@ int accept_connection(int listenfd);
 int connect_to_server(int port, const char *hostname);
 
 #endif
+

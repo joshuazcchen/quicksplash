@@ -70,6 +70,3 @@ void free_card(Card* card) {
     return;
 }
 
-
-
-

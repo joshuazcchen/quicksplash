@@ -36,3 +36,4 @@ Packet stop(p_type type, char* c) {
     p.data[BUFFERSIZE-1] = '\0';
     return p;
 }
+
