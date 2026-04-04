@@ -18,13 +18,25 @@ response c_send(Packet p) {
 }
 
 response c_read() {
-    response ret = comms_read(s_socket, &partial, &inbuf);
-    printf("here success read\n");
+    Packet *pptr = malloc(sizeof(Packet));
+    Packet *aptr = malloc(sizeof(Packet));
+    memset(aptr, '\0', sizeof(Packet));
+    memset(pptr, '\0', sizeof(Packet));
+    if (!inbuf) {
+        inbuf = 0;
+    }
+
+    response ret = comms_read(s_socket, pptr, &inbuf);
     if (ret == READ_SUCCESS) {
-        memcpy(&active, &partial, sizeof(Packet));
+        memcpy(aptr, pptr, sizeof(Packet));
+        active = *aptr;
+        partial = *pptr;
         inbuf = 0;
         ready = 1;
     }
+
+    free(pptr);
+    free(aptr);
     return ret;
 }
 

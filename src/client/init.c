@@ -52,7 +52,7 @@ int main() {
 			printf("asdkkasdfa\n");
 			if (c_read() == READ_SUCCESS && ready) {
 				printf("successfully read packet");
-				printf("%s", ptos(&active));
+				printf("%s", ptoc(&active).prompt_text);
 			}
 		}
 	} else {
