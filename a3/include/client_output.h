@@ -15,9 +15,5 @@ void show_vote_card(Card card, int response_count);
 int init_display();
 void clear_screen();
 void server_select(char* name, char* port, char* addr);
-void set_default_guest_username(char* name, int name_cap);
-void box_print_border(char* start_pad, char* color,\
-					  char* left, char* hchar, char* right,\
-					  int inner_width);
 
 #endif
