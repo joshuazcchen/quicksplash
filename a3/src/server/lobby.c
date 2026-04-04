@@ -23,6 +23,11 @@ void start_lobby(int listenfd) {
     for (int i = 0; i < LOBBY_SIZE; i++) {
         players[i].fd = -1;
         players[i].state = DISCONNECTED;
+		players[i].c_state = HEADER;
+		players[i].h_inbuf = 0;
+		players[i].p_inbuf = 0;
+		players[i].ready = 0;
+		players[i].active.data = NULL;
         memset(players[i].name, '\0', 32);
     }
     
@@ -39,19 +44,20 @@ void start_lobby(int listenfd) {
             int fd_n = accept_connection(listenfd);
             if (fd_n != -1) {
                 FD_SET(fd_n, &fds);
-                // TODO: we really gotta go thru and just remove all these expansions into ternaries even if kai has an aneurysm
-                if (fd_n > max_fd) {
-                    max_fd = fd_n;
-                }
+                if (fd_n > max_fd) max_fd = fd_n;
                 for (int i = 0; i < LOBBY_SIZE; i++) {
                     if (players[i].state == DISCONNECTED) {
                         players[i].fd = fd_n;
-                        players[i].inbuf = 0;
-                        players[i].ready = 0;
                         players[i].p_id = i+1; 
                         players[i].state = PENDING;
-                        sprintf(players[i].name, "%d", i); // we gotta figure out how the join packet works but for now im just putting an int.
-                        printf("player joined successfully\n");
+						players[i].c_state = HEADER;
+						players[i].h_inbuf = 0;
+						players[i].p_inbuf = 0;
+						players[i].ready = 0;
+						// hi im not sure why i split these its just that having a random green in the middle
+						// was bugging me a bit lol
+                        sprintf(players[i].name, "%d", i); 
+						printf("Connection received from %d\n", players[i].fd);
                         break;
                     }
                 }
@@ -61,32 +67,44 @@ void start_lobby(int listenfd) {
         for (int i = 0; i < LOBBY_SIZE; i++) {
             if (players[i].state != DISCONNECTED && FD_ISSET(players[i].fd, &read_fds)) {
                 response ret = s_read(&players[i]);
-                sleep(1);
-                printf("%d", ret);
+
                 if (ret == READ_SUCCESS && players[i].ready) {
-                    printf("here\n");
                     Packet *pkt = &players[i].active;
                     if (players[i].state == PENDING) {
-                        if (pkt->type == P_JOIN) {
+                        if (pkt->header.type == PKT_JOIN) {
                             strncpy(players[i].name, ptos(pkt), 31);
-                            players[i].name[32] = '\0';
+							// not fully remembering how i did it before but 32 would null ptr error so were gonna not.
+							// swapped this to 31 instead of 32
+                            players[i].name[31] = '\0';
                             //players[i].state = READY;
                             joined++;
                             printf("%s joined properly\n", players[i].name);
-                        } else if (pkt->type == P_START) {
+                        } else if (pkt->header.type == PKT_START) {
                             // at least for testing im giving my player the ability to start the game.
+							// // TODO TODO: ADD VERIFICATION THAT ITS THE ACTUAL DEDICATED HOST CLIENT
                             printf("success start game\n");
                             started = 1;
+							free(pkt->data);
+							pkt->data = NULL;
                             return;
                         } else {
                             printf("waiting for correct packet\n");
                         }
                     }
+					free(pkt->data);
+					pkt->data = NULL;
                     players[i].ready = 0;
-                } else if (ret == -2) {
-                    printf("player disconnected");
+                } else if (ret == CLIENT_DISCONNECT) {
                     close(players[i].fd);
-                // TODO: finish this
+					players[i].state = DISCONNECTED;
+					players[i].fd = -1;
+					if (players[i].active.data) {
+						free(players[i].active.data);
+						players[i].active.data = NULL;
+						printf("Cleared data from disconnected player\n");
+					}
+					printf("Player disconnected\n");
+					// TODO: finish this
                 }
             }
         }

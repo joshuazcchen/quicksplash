@@ -19,7 +19,7 @@ typedef enum {
     P_START = 8
 } p_type;
 
-typedef struct {
+typedef enum {
 	PKT_TEST = 1,
 	PKT_JOIN = 2,
 	PKT_LEAVE = 3,
@@ -27,7 +27,7 @@ typedef struct {
 	PKT_REPLY = 5,
 	PKT_VOTE = 6,
 	PKT_STATS = 7,
-	PKT_START = 99
+	PKT_START = 99,
 } pkt_type; // REDOING BECAUSE WE HAVE TOO MANY THINGS NAMED P_ LOL. PACKETS ARE NOW PKT
 
 typedef struct {
@@ -67,7 +67,7 @@ typedef struct player { // have to have the player alias at the top too so we ca
 
     // idk how else to do this so ig we got a staging area now. getting closer to accidentally making git by the minute
     Packet active;
-	pkt_state pkt_st; // stupid variable name just determines whether we already received a header
+	pkt_state c_state; // stupid variable name just determines whether we already received a header
 	int h_inbuf; // header inbuf
 	int p_inbuf; // actual packet/payload inbuf
 	int ready;

@@ -35,9 +35,11 @@ response await_responses() {
         drawn_card->responses[i]->response = NULL; 
     }
     
-    if(s_send(ctop(*(drawn_card))) == GAME_SUCCESS){
+	Packet p = ctop(*(drawn_card)); 
+    if(s_send(&p) == GAME_SUCCESS){
         printf("Sent messages to players \n");
     }
+	free(p.data);
 
     if(s_listen(60) == TIMEOUT){ /// time limit to check for responses
         printf("responses recorded and timeout \n"); 

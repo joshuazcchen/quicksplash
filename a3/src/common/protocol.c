@@ -27,7 +27,7 @@ Card ptoc(Packet *p) {
 Packet ctop(Card c) {
     Packet p;
     p.header.type = PKT_CARD;
-    memset(p.header, '\0', sizeof(PacketHeader));
+    //memset(&p.header, '\0', sizeof(PacketHeader));
 	p.header.length = strlen(c.prompt_text) + 1;
 	p.data = malloc(p.header.length);
 	strcpy(p.data, c.prompt_text);
@@ -39,7 +39,7 @@ Packet ctop(Card c) {
 Packet stop(pkt_type type, char* c) {
     Packet p;
     p.header.type = type;
-    memset(p.header, '\0', sizeof(PacketHeader));
+    //memset(p.header, '\0', sizeof(PacketHeader));
 	if (c != NULL && c[0] != '\0') { // verify that theres actually something to put in the string.
 		p.header.length = strlen(c) + 1;
 		p.data = malloc(p.header.length);
