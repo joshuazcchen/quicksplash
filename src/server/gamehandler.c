@@ -18,17 +18,20 @@ response game_loop(int round_count){
         // send round prompt to players
         // wait for all player responses
         if(await_responses()== GAME_SUCCESS){
-            printf("RESPONSES READY TO SEND\n");
+            printf("RESPONSES SENT AND RECORDED\n");
         }
         // initiate voting
+        printf("Starting Vote \n");
         if (initiate_vote() == GAME_SUCCESS){
             printf("vote starting\n");
         }
         // determine winner or round
+        printf("looking for winner \n");
         if (determine_round_winner() == GAME_SUCCESS){
             printf("WE HAVE A WINNER\n");
         }
         // end round
+        printf("ending the round \n");
         if(end_round() == GAME_SUCCESS){
             printf("ROUND ENDED\n");
         }

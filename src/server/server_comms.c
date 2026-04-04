@@ -83,11 +83,11 @@ response s_read(Player *p) {
 // still does not have a true response
 response s_listen(int max_time) {
     time_t start = time(NULL);
-
+	int fd_count = 0;
     // repeat for max_time time until time out or everyone has answered.
     // in case of client disconnect, you will just have to wait out the max_time.
     // however we could probably make that work better by using signals or smth?
-    while (1) {
+	while (1) {
         int t = time(NULL) - start;
         if (t >= max_time) {
             return TIMEOUT;
@@ -114,17 +114,25 @@ response s_listen(int max_time) {
         struct timeval tl; // apparently this is considered synchronous which means i need it for the select multiplexing for the timeout.
         tl.tv_sec = max_time - t;
 		tl.tv_usec = 0;
-
+		
         int listen = select(high + 1, &fds, NULL, NULL, &tl);
         if (listen > 0) {
             for (int i = 0; i < LOBBY_SIZE; i++) {
                 // try to read from each player, if it reads properly then great, this was the player we wanted to listen to, otherwise, keep goin'.
+				
 				if (FD_ISSET(players[i].fd, &fds)) {
 					// not going to even touch reimplementing all that logic again.
-					s_read(&players[i]);
+					if(s_read(&players[i])== READ_SUCCESS){
+						fd_count++;
+					}
 				}
+
             }
         }
+		// TODO: JOSHUA KEEP TRACK OF NUMBERS OF PLAYER IN THE LOBBY PELASE BECEAUSE I ALSO NEED THIS THANKS
+		if(fd_count == 2){
+			return TIMEOUT;
+		}
     }
 }
 

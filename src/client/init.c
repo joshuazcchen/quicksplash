@@ -64,6 +64,12 @@ int main() {
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text);
 				}
+				
+				char * prompt_response = malloc(sizeof(char )*256);
+				get_str_to_ptr(prompt_response, 256);
+				Packet p = strtopkt(PKT_REPLY, prompt_response);
+				c_send(&p);
+
 				free(rec.prompt_text);
 				free(active.data);
 				active.data = NULL;

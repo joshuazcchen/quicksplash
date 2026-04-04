@@ -48,13 +48,16 @@ response await_responses() {
     }
 	free(p.data);
 
-    if(s_listen(60) == TIMEOUT){ // time limit to check for responses
-        printf("responses recorded and timeout\n");
+    if(s_listen(10) == TIMEOUT){ // time limit to check for responses
+        printf("responses recorded and timeout \n");
         for(int i = 0; i < LOBBY_SIZE; i++){
             for(int j = 0; j < LOBBY_SIZE; j++){
+
                 if(drawn_card->responses[j]->player->p_id == players[i].p_id){
-                    drawn_card->responses[j]->response = players[i].active.data;
+                    drawn_card->responses[j]->response = pkttostr(&(players[i].active));
+                    printf("found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));
                 }
+                
             }
         }
     }
@@ -95,11 +98,11 @@ response initiate_vote() {
     // SEND ARRAY OF RESPONSES + PIDS TO PLAYERS 
 	Packet p = ctop(*(drawn_card));
     if(s_send(&p) == GAME_SUCCESS){
-        
-        printf("Sent messages to players\n");
+        printf("Sending the voting options to players \n");
     }
-    if(s_listen(60) == TIMEOUT){ // time limit to check for responses
-        printf("responses recorded and timeout\n");
+
+    if(s_listen(5) == TIMEOUT){ // time limit to check for responses
+        printf("recorded votes and is now tallying the votes\n");
         for(int i = 0; i < LOBBY_SIZE; i++){
             for(int j = 0; j < LOBBY_SIZE; j++){
                 //TODO: JOSHUA MAKE SURE DATA ONLY COSNISTS OF A SINGLE INT
