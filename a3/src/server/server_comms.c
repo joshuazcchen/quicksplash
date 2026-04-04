@@ -38,8 +38,9 @@ response s_read(Player *p) {
 	if (p->c_state == HEADER) {
 		ret = comms_read(p->fd, &p->active.header, &p->h_inbuf, sizeof(PacketHeader));
 		if (ret == READ_SUCCESS) {
-			p->c_state = PAYLOAD;
 			p->active.header.length = ntohs(p->active.header.length);
+			printf("server awaiting for type %d for %d\n", p->active.header.type, p->active.header.length); 
+			p->c_state = PAYLOAD;
 
 			if (p->active.header.length > 0) {
 				p->active.data = malloc(p->active.header.length);
@@ -66,8 +67,9 @@ response s_read(Player *p) {
 	}
 
 	if (p->c_state == PAYLOAD) {
-		ret = comms_read(p->fd, &p->active.data, &p->p_inbuf, p->active.header.length);
+		ret = comms_read(p->fd, p->active.data, &p->p_inbuf, p->active.header.length);
 		if (ret == READ_SUCCESS) {
+			printf("server read type for data %s\n", p->active.data); 
 			p->c_state = HEADER;
 			p->h_inbuf = 0;
 			p->p_inbuf = 0;

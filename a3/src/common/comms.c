@@ -43,6 +43,9 @@ response comms_read(int fd, void *buf, int *inbuf, int target) {
 // ok in hindsight maybe the only big change was just that I had to send it in two separate sets? 
 response comms_send(int fd, Packet *p) {
 	PacketHeader p_head;
+
+	memset(&p_head, '\0', sizeof(PacketHeader));
+
 	p_head.type = p->header.type;
 	// if we end up swapping to a larger maximum packet size we may need to convert this to htonl (host to network long) compared to currently hton(short).
 	p_head.length = htons(p->header.length); // seems this handles different cpu architectures (little vs big endian).
@@ -56,7 +59,7 @@ response comms_send(int fd, Packet *p) {
 
 	// send actual payload
 	if (p_head.length > 0 && p->data) {
-		if (write(fd, p->data, p_head.length) < 0) {
+		if (write(fd, p->data, p->header.length) < 0) {
 			perror("comms_send");
 			printf("something broke while sending the hydrogen bomb;");
 			return SEND_FAIL;

@@ -54,13 +54,7 @@ Packet stop(pkt_type type, char* c) {
     return p;
 }
 
-
-// because i dont wanna go back and change all the uses of my stupid naming im gonna just make aliases for now.
-// TODO: swap these to fn aliases in attribute of {*}.h
-Packet strtopkt(pkt_type type, char* c) {
-	return stop(type, c);
-}
-
-Packet ctopkt(Card c) {
-	return ctop(c);
-}
+Packet strtopkt(pkt_type type, char* c) __attribute__((alias("stop")));
+char* pkttostr(Packet *p) __attribute__((alias("ptos")));
+Card pkttoc(Packet *p) __attribute__((alias("ptoc")));
+Packet ctopkt(Card c) __attribute__((alias("ctop")));
