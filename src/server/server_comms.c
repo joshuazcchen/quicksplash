@@ -102,7 +102,7 @@ response s_listen(int max_time) {
         int high = 0;
 
         for (int i = 0; i < LOBBY_SIZE; i++) {
-            if (players[i].fd) {
+            if (players[i].fd > 2) {
                 FD_SET(players[i].fd, &fds);
                 if (players[i].fd > high) {
                     high = players[i].fd;
@@ -113,6 +113,7 @@ response s_listen(int max_time) {
         // set up the struct that will be used to time out if max_time has passed
         struct timeval tl; // apparently this is considered synchronous which means i need it for the select multiplexing for the timeout.
         tl.tv_sec = max_time - t;
+		tl.tv_usec = 0;
 
         int listen = select(high + 1, &fds, NULL, NULL, &tl);
         if (listen > 0) {
