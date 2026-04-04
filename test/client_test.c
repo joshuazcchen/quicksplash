@@ -22,8 +22,8 @@ int main(int argc, char *argv[]) {
     show_card_prompt(a);
 
     while (1) {
-      char response[11];
-      strcpy(response, get_text_input("I need input", 10));
+      char* response;
+      response = get_text_input("I need input", 10);
       printf("%s\n", response);
       free(response);
     }
