@@ -18,28 +18,57 @@ typedef enum {
     P_START = 8
 } p_type;
 
+typedef struct {
+	PKT_TEST = 1,
+	PKT_JOIN = 2,
+	PKT_LEAVE = 3,
+	PKT_CARD = 4,
+	PKT_REPLY = 5,
+	PKT_VOTE = 6,
+	PKT_STATS = 7,
+	PKT_START = 99
+} pkt_type; // REDOING BECAUSE WE HAVE TOO MANY THINGS NAMED P_ LOL. PACKETS ARE NOW PKT
+
+typedef struct {
+	pkt_type type;
+	uint16_t length; // maximum of 65k ish but if we ever need more length, we can always update this accordingly.
+					 // moreso like this just so if we ever end up with a faulty client they can only ever really freeze server for 65k bytes at a given time (65kb  is basically instant lol).
+} PacketHeader;
+
+typedef struct {
+	PacketHeader header;
+	char *data; // this is gonna have to be dynamically allocated as opposed to the fixed buffersize from before.
+} Packet;
+
+typedef enum {
+	HEADER = 1, 
+	PAYLOAD = 2
+} pkt_state; // state of the current read, whether we're awaiting the next header or the full payload of the packet
+
 typedef enum {
     DISCONNECTED = 0,
     PENDING = 1,
     READY = 2
 } p_state;
 
-typedef struct {
-    p_type type;
-    char data[BUFFERSIZE];
-} Packet; // data sent to and from the client, declare a specific id for type of info so it can be processed accordingly.
+// DEPRECATED - Joshua
+//typedef struct {
+//    p_type type;
+//    char data[BUFFERSIZE];
+//} Packet; // data sent to and from the client, declare a specific id for type of info so it can be processed accordingly.
 
-typedef struct {
+typedef struct player { // have to have the player alias at the top too so we can self reference
     int p_id; // we can store the user's machine info somewhere inside this struct too so that we know who we're listening to from the serverside?
     int fd;
     char name[32];
+	p_state state; // this is player state not packet state, stupid naming.
 
     // idk how else to do this so ig we got a staging area now. getting closer to accidentally making git by the minute
     Packet active;
-    int ready;
-    Packet partial;
-    int inbuf;
-    p_state state;
+	pkt_state pkt_st; // stupid variable name just determines whether we already received a header
+	int h_inbuf; // header inbuf
+	int p_inbuf; // actual packet/payload inbuf
+	int ready;
 } Player;
 
 typedef struct{
