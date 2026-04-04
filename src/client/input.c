@@ -23,7 +23,7 @@ char* get_text_input(char* prompt, int max_chars) {
 		exit(1);
 	}
 }
-// TODO: can we standardize the tab indentation amt to 4 spaces?
+
 void get_str_to_ptr(char* ptr, int max_chars) {
 	if (fgets(ptr, max_chars, stdin)) {
         if (strchr(ptr, '\n') == NULL) {
