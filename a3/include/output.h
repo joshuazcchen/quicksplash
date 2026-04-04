@@ -7,6 +7,7 @@ void update_size(int sig);
 void display_title();
 void display_n_times(char* to_disp, int n);
 void justify_text_format(char* text_format, int min_char, int max_char, char* text);
+void center_text_display(char* text);
 void show_card_prompt(Card card);
 int init_display();
 
