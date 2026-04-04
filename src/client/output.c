@@ -7,6 +7,7 @@
 #include <time.h>
 #include "gamestructs.h"
 #include "client_output.h"
+#include "client_ui_vote.h"
 #include "client_input.h"
 #include "output.h"
 
@@ -78,6 +79,10 @@ void show_card_prompt(Card card) {
 	printf("%s╰", start_pad);
 	display_n_times("─", horizontal_size-2);
 	printf("╯\n");
+}
+
+void show_vote_card(Card card, int response_count) {
+	ui_show_vote_card(card, response_count);
 }
 
 int init_display() {

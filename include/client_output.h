@@ -11,6 +11,7 @@ void display_n_times(char* to_disp, int n);
 void justify_text_format(char* text_format, int min_char, int max_char, char* text);
 void center_text_display(char* text);
 void show_card_prompt(Card card);
+void show_vote_card(Card card, int response_count);
 int init_display();
 void clear_screen();
 void server_select(char* name, char* port, char* addr);
@@ -20,4 +21,3 @@ void box_print_border(char* start_pad, char* color,\
 					  int inner_width);
 
 #endif
-
