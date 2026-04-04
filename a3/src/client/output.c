@@ -94,20 +94,20 @@ void clear_screen() {
 	printf("\033[2J\033[H\n");
 }
 
-static int server_select_panel_width(int width) {
+int server_select_panel_width(int width) {
 	if (width >= 72) return 68;
 	if (width >= 40) return width - 4;
 	return width;
 }
 
-static int server_select_left_pad(int width, int panel_width) {
+int server_select_left_pad(int width, int panel_width) {
 	int left_pad = (width - panel_width) / 2;
 	if (left_pad < 0) left_pad = 0;
 	return left_pad;
 }
 
-static void set_default_guest_username(char* name, int name_cap) {
-	static int seeded = 0;
+void set_default_guest_username(char* name, int name_cap) {
+	static int seeded = 0; // static to ensure it keeps the same seed for future calls
 	int suffix;
 
 	if (strlen(name) > 0) return;
@@ -121,15 +121,15 @@ static void set_default_guest_username(char* name, int name_cap) {
 	snprintf(name, name_cap, "Guest%d", suffix);
 }
 
-static void box_print_border(const char* start_pad, const char* color, const char* left, const char* hchar, const char* right, int inner_width) {
-	const char* reset = "\033[0m";
+void box_print_border(char* start_pad, char* color, char* left, char* hchar, char* right, int inner_width) {
+	char* reset = "\033[0m";
 	printf("%s%s%s", start_pad, color, left);
 	display_n_times((char*)hchar, inner_width);
 	printf("%s%s\n", right, reset);
 }
 
-static void box_print_line(const char* start_pad, const char* border_color, const char* text_color, int inner_width, const char* text) {
-	const char* reset = "\033[0m";
+void box_print_line(char* start_pad, char* border_color, char* text_color, int inner_width, char* text) {
+	char* reset = "\033[0m";
 	int text_len = strlen(text);
 	int shown = (text_len > inner_width) ? inner_width : text_len;
 
@@ -140,21 +140,21 @@ static void box_print_line(const char* start_pad, const char* border_color, cons
 	printf("%s║%s\n", border_color, reset);
 }
 
-static void box_print_fill(const char* start_pad, const char* border_color, const char* fill_color, int inner_width, const char* fill_char) {
-	const char* reset = "\033[0m";
+void box_print_fill(char* start_pad, char* border_color, char* fill_color, int inner_width, char* fill_char) {
+	char* reset = "\033[0m";
 	printf("%s%s║%s", start_pad, border_color, fill_color);
 	display_n_times((char*)fill_char, inner_width);
 	printf("%s%s║%s\n", reset, border_color, reset);
 }
 
-static void server_select_render(char* name, char* port, char* addr, int active_field) {
-	const char* border = "\033[1;34m";
-	const char* title = "\033[1;96m";
-	const char* info = "\033[0;37m";
-	const char* muted = "\033[2;37m";
-	const char* active = "\033[1;33m";
-	const char* value = "\033[1;97m";
-	const char* separator = "\033[0;36m";
+void server_select_render(char* name, char* port, char* addr, int active_field) {
+	char* border = "\033[1;34m";
+	char* title = "\033[1;96m";
+	char* info = "\033[0;37m";
+	char* muted = "\033[2;37m";
+	char* active = "\033[1;33m";
+	char* value = "\033[1;97m";
+	char* separator = "\033[0;36m";
 
 	int width = terminal_width;
 	if (width <= 0) width = 80;
@@ -167,9 +167,9 @@ static void server_select_render(char* name, char* port, char* addr, int active_
 	start_pad[left_pad] = '\0';
 	int inner_width = panel_width - 2;
 	char line[256];
-	const char* marker0 = (active_field == 0) ? ">" : "-";
-	const char* marker1 = (active_field == 1) ? ">" : "-";
-	const char* marker2 = (active_field == 2) ? ">" : "-";
+	char* marker0 = (active_field == 0) ? ">" : "-";
+	char* marker1 = (active_field == 1) ? ">" : "-";
+	char* marker2 = (active_field == 2) ? ">" : "-";
 
 	clear_screen();
 
@@ -198,10 +198,10 @@ static void server_select_render(char* name, char* port, char* addr, int active_
 }
 
 void server_select(char* name, char* port, char* addr) {
-	const char* reset = "\033[0m";
-	const char* accent = "\033[1;33m";
-	const char* soft = "\033[2;37m";
-	const char* good = "\033[1;32m";
+	char* reset = "\033[0m";
+	char* accent = "\033[1;33m";
+	char* soft = "\033[2;37m";
+	char* good = "\033[1;32m";
 	int width, panel_width, left_pad;
 	char start_pad[128];
 
@@ -259,3 +259,4 @@ void server_select(char* name, char* port, char* addr) {
 	snprintf(buf, sizeof(buf), "Connecting to %s:%s as %s", addr, port, name);
 	printf("%s%s%s%s\n", start_pad, soft, buf, reset);
 }
+
