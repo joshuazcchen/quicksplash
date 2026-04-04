@@ -23,7 +23,7 @@ Packet ctop(Card c) {
 }
 
 // surely theres a better name for this lmfao
-Packet stop(int type, char* c) {
+Packet stop(p_type type, char* c) {
     Packet p;
     p.type = type;
     memset(p.data, '\0', BUFFERSIZE);

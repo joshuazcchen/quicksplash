@@ -5,6 +5,6 @@
 char* ptos(Packet *p);
 Card ptoc(Packet *p);
 Packet ctop(Card c);
-Packet stop(int type, char* c);
+Packet stop(p_type type, char* c);
 
 #endif
