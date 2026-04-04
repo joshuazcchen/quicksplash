@@ -20,6 +20,7 @@ CLIENT_SRCS := \
 	src/client/input.c \
 	src/client/output.c \
 	src/client/ui/card_vote.c \
+	src/client/ui/lobby_connect.c \
 	src/common/protocol.c \
 	src/common/comms.c \
 	src/common/socket.c
@@ -38,6 +39,7 @@ CLIENT_TEST_SRCS := \
 	src/common/comms.c \
 	src/client/output.c \
 	src/client/ui/card_vote.c \
+	src/client/ui/lobby_connect.c \
 	src/client/input.c
 
 .PHONY: all clean test
