@@ -17,6 +17,12 @@ typedef enum {
     P_STATS = 7
 } p_type;
 
+typedef enum {
+    DISCONNECTED = 0,
+    PENDING = 1,
+    READY = 2
+} p_state;
+
 typedef struct {
     p_type type;
     char data[BUFFERSIZE];
@@ -32,6 +38,7 @@ typedef struct {
     int ready;
     Packet partial;
     int inbuf;
+    p_state state;
 } Player;
 
 typedef struct{
