@@ -83,7 +83,7 @@ response s_read(Player *p) {
 // still does not have a true response
 response s_listen(int max_time) {
     time_t start = time(NULL);
-    
+
     // repeat for max_time time until time out or everyone has answered.
     // in case of client disconnect, you will just have to wait out the max_time.
     // however we could probably make that work better by using signals or smth?

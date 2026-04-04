@@ -1,23 +1,61 @@
-# TODO: this  
-CFLAGS = -Wall -Iinclude
+CC ?= gcc
+CFLAGS ?= -Wall -Wextra -g -Iinclude
+LDFLAGS ?=
+LDLIBS ?=
 
-.PHONY: all test
+SERVER_SRCS := \
+	src/server/init.c \
+	src/server/cards.c \
+	src/server/gamestates.c \
+	src/server/gamehandler.c \
+	src/server/server_comms.c \
+	src/server/lobby.c \
+	src/common/socket.c \
+	src/common/comms.c \
+	src/common/protocol.c
+
+CLIENT_SRCS := \
+	src/client/init.c \
+	src/client/client_comms.c \
+	src/client/input.c \
+	src/client/output.c \
+	src/client/ui/card_vote.c \
+	src/common/protocol.c \
+	src/common/comms.c \
+	src/common/socket.c
+
+SERVER_TEST_SRCS := \
+	test/server_test.c \
+	test/server_test_support.c \
+	src/server/cards.c \
+	src/server/gamehandler.c \
+	src/server/gamestates.c \
+	src/common/protocol.c
+
+CLIENT_TEST_SRCS := \
+	test/client_test.c \
+	src/common/socket.c \
+	src/common/comms.c \
+	src/client/output.c \
+	src/client/ui/card_vote.c \
+	src/client/input.c
+
+.PHONY: all clean test
 
 all: clean server client
 test: clean server test_client server_test
 
-# ik this is incorrect kai it was just so i could test builds lol
-server_test: 
-	gcc -Wall -Iinclude test/server_test.c src/server/cards.c src/server/gamehandler.c src/server/gamestates.c -o server_test
+server: $(SERVER_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-server:
-	gcc -Wall -Iinclude src/server/init.c src/server/cards.c src/server/gamestates.c src/server/gamehandler.c src/server/server_comms.c src/server/lobby.c src/common/socket.c src/common/comms.c src/common/protocol.c -o server
+client: $(CLIENT_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-test_client:
-	gcc -Wall -Iinclude test/client_test.c src/common/socket.c src/common/comms.c src/client/output.c src/client/input.c -o client_test
+server_test: $(SERVER_TEST_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-client:
-	gcc -Wall -Iinclude src/client/init.c src/client/client_comms.c src/client/input.c src/client/output.c src/common/protocol.c src/common/comms.c src/common/socket.c -o client
+test_client: $(CLIENT_TEST_SRCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 clean:
 	rm -f server client server_test test_client
