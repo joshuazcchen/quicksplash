@@ -35,7 +35,7 @@ typedef struct {
 } Player;
 
 typedef struct{
-    Player player; // player sending the response 
+    Player* player; // player sending the response 
     char* response; // the response player typed in
 } Response;
 
