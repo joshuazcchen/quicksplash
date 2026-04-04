@@ -7,6 +7,11 @@
 #include "gamestructs.h"
 #include "socket.h"
 #include <stdlib.h>
+#include "comms.h"
+#include "gamestates.h"
+#include <unistd.h>
+#include "server_comms.h"
+#include "protocol.h"
 
 #define LOBBY_SIZE 5 // i swear to god ive defined this thing in like three different files. TODO: MOVE IT SOMEWHERE PERMANENTLY. IT MAKES SENSE HERE BUT NOT REALLY.
 Player players[LOBBY_SIZE];
@@ -19,6 +24,23 @@ int main() {
     int listenfd = set_up_server_socket(self, 5);
     
     start_lobby(listenfd);
+    printf("made it here\n");
+
+    if (setup_game() == GAME_SUCCESS){
+        printf("CARDS INITIALIZED \n");
+    }
+
+    while (1) {
+        sleep(1);
+        s_send(stop(P_JOIN, "lemongrass chicken"));
+    }
+    //if(game_loop(5) == GAME_SUCCESS){
+    //    printf("GOOD! \n");
+    //}
+
+    if (wrap_up_game() == GAME_SUCCESS){
+        printf("GAME ENDED WOWWWWWWWWWWWWWWWWWWWWWWWWW\n");
+    }
 
     free(self);
     return 0;

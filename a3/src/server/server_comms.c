@@ -21,6 +21,17 @@ response s_send(Packet p) {
     return SEND_SUCCESS;
 }
 
+response s_read(Player *p) {
+    response ret = comms_read(p->fd, &p->partial, &p->inbuf);
+    if (ret == READ_SUCCESS) {
+        printf("made it here\n");
+        memcpy(&p->active, &p->partial, sizeof(Packet));
+        p->inbuf = 0;
+        p->ready = 1;
+    }
+    return ret;
+}
+
 // ok theres actually no way to respond here properly tbh lol
 response s_listen(int max_time) {
     time_t start = time(NULL);

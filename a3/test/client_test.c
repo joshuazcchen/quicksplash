@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     }
     Card a;
     a.prompt_text = malloc(sizeof(char) * 100);
-    char test_string[] = "wow thia is a funny card promp, i'm just testing if it works or not by the way...";
+    char test_string[] = "test phrase orange lemon village orangutan";
     strncpy(a.prompt_text, test_string, 99);
     (a.prompt_text)[99] = '\0';
     printf("%s\n", a.prompt_text);

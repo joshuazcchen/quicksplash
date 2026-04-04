@@ -3,6 +3,8 @@
 #include "gamestructs.h"
 #include <string.h>
 #include "socket.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 extern int s_socket;
 
@@ -17,6 +19,7 @@ response c_send(Packet p) {
 
 response c_read() {
     response ret = comms_read(s_socket, &partial, &inbuf);
+    printf("here success read\n");
     if (ret == READ_SUCCESS) {
         memcpy(&active, &partial, sizeof(Packet));
         inbuf = 0;

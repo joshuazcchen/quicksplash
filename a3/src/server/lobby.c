@@ -3,6 +3,7 @@
 #include <sys/select.h>
 #include "gamestructs.h"
 #include "socket.h"
+#include "server_comms.h"
 #include "comms.h"
 #include <stdlib.h>
 #include <unistd.h>
@@ -21,6 +22,7 @@ void start_lobby(int listenfd) {
 
     for (int i = 0; i < LOBBY_SIZE; i++) {
         players[i].fd = -1;
+        players[i].state = DISCONNECTED;
         memset(players[i].name, '\0', 32);
     }
     
@@ -42,22 +44,51 @@ void start_lobby(int listenfd) {
                     max_fd = fd_n;
                 }
                 for (int i = 0; i < LOBBY_SIZE; i++) {
-                    if (players[i].fd == -1) {
+                    if (players[i].state == DISCONNECTED) {
                         players[i].fd = fd_n;
                         players[i].inbuf = 0;
                         players[i].ready = 0;
+                        players[i].state = PENDING;
                         sprintf(players[i].name, "%d", i); // we gotta figure out how the join packet works but for now im just putting an int.
                         printf("player joined successfully\n");
-                        joined++;
                         break;
                     }
                 }
-                if (joined >= LOBBY_SIZE) {
-                    printf("lobby full");
-                    started = 1;
+            }
+        }
+
+        for (int i = 0; i < LOBBY_SIZE; i++) {
+            if (players[i].state != DISCONNECTED && FD_ISSET(players[i].fd, &read_fds)) {
+                response ret = s_read(&players[i]);
+                sleep(1);
+                printf("%d", ret);
+                if (ret == READ_SUCCESS && players[i].ready) {
+                    printf("here\n");
+                    Packet *pkt = &players[i].active;
+                    if (players[i].state == PENDING) {
+                        if (pkt->type == P_JOIN) {
+                            strncpy(players[i].name, ptos(pkt), 31);
+                            players[i].name[32] = '\0';
+                            //players[i].state = READY;
+                            joined++;
+                            printf("%s joined properly\n", players[i].name);
+                        } else if (pkt->type == P_START) {
+                            // at least for testing im giving my player the ability to start the game.
+                            printf("success start game\n");
+                            started = 1;
+                            return;
+                        } else {
+                            printf("waiting for correct packet\n");
+                        }
+                    }
+                    players[i].ready = 0;
+                } else if (ret == -2) {
+                    printf("player disconnected");
+                    close(players[i].fd);
+                // TODO: finish this
                 }
             }
         }
     }
-    printf("woohoo");
+    printf("woohoo\n");
 }
