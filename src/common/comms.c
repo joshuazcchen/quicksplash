@@ -14,23 +14,18 @@ response comms_read(int fd, Packet *partial, int *inbuf) {
     if (room <= 0) {
         return READ_FAIL;
     }
-    int nbytes;
-    if (*inbuf > 0) {
-        nbytes = recv(fd, (char*)partial + *inbuf, room, MSG_DONTWAIT);
-        if (nbytes < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+    int nbytes = recv(fd, (char*)partial + *inbuf, room, MSG_DONTWAIT);
+    if (nbytes == 0) {
+        return CLIENT_DISCONNECT;
+    } else if (nbytes < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return READ_PARTIAL;
-        } else if (nbytes <= 0) {
-            return CLIENT_DISCONNECT;
-        } else {
-            nbytes = read(fd, (char*)partial + *inbuf, room);
-            if (nbytes <= 0) {
-                return CLIENT_DISCONNECT;
-            }
-        }
-        *inbuf += nbytes;
-        if (*inbuf == sizeof(Packet)) {
-            return READ_SUCCESS;
-        }
+        } 
+        return CLIENT_DISCONNECT;
+    }
+    *inbuf += nbytes;
+    if (*inbuf == sizeof(Packet)) {
+        return READ_SUCCESS;
     }
     return READ_PARTIAL;
 }

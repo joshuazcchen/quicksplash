@@ -14,7 +14,8 @@ typedef enum {
     P_CARD = 4,
     P_REPLY = 5,
     P_VOTE = 6,
-    P_STATS = 7
+    P_STATS = 7,
+    P_START = 8
 } p_type;
 
 typedef enum {
