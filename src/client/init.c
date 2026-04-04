@@ -51,26 +51,24 @@ int main() {
 			if (c_read() == READ_SUCCESS && ready) {
 				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = ptoc(&active);
-				printf("\ncard got: %s\n", rec.prompt_text);
-				active.data = NULL;
+				printf("\ncard got: %s\n", rec.prompt_text ? rec.prompt_text : "[no text]");
 
 				// TODO: resolving merge conflicts, this is a bit funky, not sure if this will break on active since it will
 				// not necessarily free the things until after show_vote_card and show-card_prompt, not sure how those work
 				// not gonna bother checkign rn.
 				if (active.header.type == PKT_CARD) {
-					show_card_prompt(rec);
+					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
+					Packet reply = strtopkt(PKT_REPLY, prompt_response);
+					c_send(&reply);
+					free(prompt_response);
+					free(reply.data);
 				} else if (active.header.type == PKT_VOTE) {
 					show_vote_card(rec, LOBBY_SIZE);
 				} else {
-					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text);
+					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}
-				
-				char * prompt_response = malloc(sizeof(char )*256);
-				get_str_to_ptr(prompt_response, 256);
-				Packet p = strtopkt(PKT_REPLY, prompt_response);
-				c_send(&p);
 
-				free(rec.prompt_text);
+				if (rec.prompt_text) free(rec.prompt_text);
 				free(active.data);
 				active.data = NULL;
 				ready = 0;

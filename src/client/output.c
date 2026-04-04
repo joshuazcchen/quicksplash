@@ -7,6 +7,7 @@
 #include "gamestructs.h"
 #include "client_output.h"
 #include "client_ui_lobby.h"
+#include "client_ui_prompt.h"
 #include "client_ui_vote.h"
 #include "output.h"
 
@@ -47,35 +48,11 @@ void center_text_display(char* text) {
 }
 
 void show_card_prompt(Card card) {
-	int horizontal_size = terminal_width / 2;
-	int j = (terminal_width - horizontal_size) / 2;
-	char start_pad[j + 1];
-	memset(start_pad, ' ', j);
-	start_pad[j] = '\0';
+	ui_show_card_prompt(card);
+}
 
-	printf("%s╭", start_pad);
-	display_n_times("─", horizontal_size - 2);
-	printf("╮\n");
-
-	char* title = "NEW CARD";
-	int left_pad = (horizontal_size - 2 - strlen(title)) / 2;
-	int right_pad = (horizontal_size - 2 - strlen(title)) - left_pad;
-	printf("%s│", start_pad);
-	display_n_times(" ", left_pad);
-	printf("%s", title);
-	display_n_times(" ", right_pad);
-	printf("│\n");
-
-	char* desc = "Type a funny response to this sentence:";
-	char format[strlen(start_pad) + 10 + 1];
-	strcpy(format, start_pad);
-	strcat(format, "│%-*.*s│\n");
-	justify_text_format(format, horizontal_size-2, horizontal_size-2, desc);
-	justify_text_format(format, horizontal_size-2, horizontal_size-2, card.prompt_text);
-
-	printf("%s╰", start_pad);
-	display_n_times("─", horizontal_size-2);
-	printf("╯\n");
+char* get_card_prompt_response(Card card, int max_chars) {
+	return ui_collect_card_response(card, max_chars);
 }
 
 void show_vote_card(Card card, int response_count) {
@@ -99,4 +76,3 @@ void clear_screen() {
 void server_select(char* name, char* port, char* addr) {
 	ui_server_select(name, port, addr);
 }
-
