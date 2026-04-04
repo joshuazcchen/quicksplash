@@ -39,6 +39,10 @@ response c_read() {
 				// malformed packet header or basically just sending a signal.
 				// either way pretty useless.
 				if (active.header.length == 0) {
+					active.data = NULL;
+					c_state = HEADER;
+					h_inbuf = 0;
+					ready = 1;
 					return READ_SUCCESS; // dont even bother reading and just parse thru that it was a success if its == 0 len.
 				} else {
 					printf("nothing in header len\n"); // i dont think i actually get an errno here because technically nothing sys went wrong.
