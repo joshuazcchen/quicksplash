@@ -19,6 +19,7 @@ CLIENT_SRCS := \
 	src/client/client_comms.c \
 	src/client/input.c \
 	src/client/output.c \
+	src/client/ui/card_prompt.c \
 	src/client/ui/card_vote.c \
 	src/client/ui/lobby_connect.c \
 	src/common/protocol.c \
@@ -38,6 +39,7 @@ CLIENT_TEST_SRCS := \
 	src/common/socket.c \
 	src/common/comms.c \
 	src/client/output.c \
+	src/client/ui/card_prompt.c \
 	src/client/ui/card_vote.c \
 	src/client/ui/lobby_connect.c \
 	src/client/input.c
