@@ -37,7 +37,7 @@ void ui_show_vote_card(Card card, int response_count) {
 	display_n_times("─", inner_width);
 	printf("╮\n");
 
-	printf("issue could be here: %s\n", card.prompt_text);
+	// printf("issue could be here: %s\n", card.prompt_text);
 	vote_print_line(start_pad, inner_width, "VOTE NOW");
 	vote_print_line(start_pad, inner_width, "Original card:");
 	vote_print_line(start_pad, inner_width, card.prompt_text ? card.prompt_text : "[missing prompt]");
