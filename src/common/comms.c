@@ -58,16 +58,20 @@ response comms_send(int fd, Packet *p) {
 											 // Also not sure how necessary this is but thre big people online are big
 											 // on "if you dont have this your code will explode".
 	if (write(fd, &p_head, sizeof(PacketHeader)) < 0) {
+		printf("\033[1;34m[ SYSTEM ]\033[0m \033[1;31mprotocol.c:\033[0m Failed to send packet header:\n\t");
 		perror("comms_send");
-		printf("something broke while sending the header;");
 		return SEND_FAIL;
 	}
 
 	// send actual payload
 	if (p_head.length > 0 && p->data) {
 		if (write(fd, p->data, p->header.length) < 0) {
+			if (errno == 32) {
+				printf("\033[1;34m[ SYSTEM ]\033[0m \033[1;31mprotocol.c:\033[0m Broken pipe (likely due to user disconnect):\n\t");
+			} else {
+				printf("\033[1;34m[ SYSTEM ]\033[0m \033[1;31mprotocol.c:\033[0m Failed to send payload:\n\t");
+			}
 			perror("comms_send");
-			printf("something broke while sending the hydrogen bomb;");
 			return SEND_FAIL;
 		}
 	}

@@ -37,6 +37,7 @@ struct sockaddr_in *init_server_addr(int port) {
 int set_up_server_socket(struct sockaddr_in *self, int num_queue) {
     int soc = socket(AF_INET, SOCK_STREAM, 0);
     if (soc < 0) {
+		fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;31msocket.c:\033[0m Error initiating socket.\n\t");
         perror("socket");
         exit(1);
     }
@@ -47,6 +48,7 @@ int set_up_server_socket(struct sockaddr_in *self, int num_queue) {
     int status = setsockopt(soc, SOL_SOCKET, SO_REUSEADDR,
                             (const char *) &on, sizeof(on));
     if (status < 0) {
+		fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;31msocket.c:\033[0m Error setting socket options.\n\t");
         perror("setsockopt");
         exit(1);
     }
@@ -54,6 +56,7 @@ int set_up_server_socket(struct sockaddr_in *self, int num_queue) {
     // Associate the process with the address and a port
     if (bind(soc, (struct sockaddr *)self, sizeof(*self)) < 0) {
         // bind failed; could be because port is in use.
+		fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;31msocket.c:\033[0m Error binding to port. Please try again.\n\t");
         perror("bind");
         exit(1);
     }
@@ -61,6 +64,7 @@ int set_up_server_socket(struct sockaddr_in *self, int num_queue) {
     // Set up a queue in the kernel to hold pending connections.
     if (listen(soc, num_queue) < 0) {
         // listen failed
+		fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;31msocket.c:\033[0m Error initiating kernel queue.\n\t");
         perror("listen");
         exit(1);
     }
@@ -78,14 +82,15 @@ int accept_connection(int listenfd) {
     unsigned int peer_len = sizeof(peer);
     peer.sin_family = AF_INET;
 
-    fprintf(stderr, "Waiting for a new connection...\n");
+    fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;33msocket.c:\033[0m Awaiting connection.\n");
     int client_socket = accept(listenfd, (struct sockaddr *)&peer, &peer_len);
     if (client_socket < 0) {
+		fprintf(stderr, "\033[1;33m[ SERVER ]\033[0m \033[1;31msocket.c:\033[0m Failed to accept connection.\n");
         perror("accept");
         return -1;
     } else {
         fprintf(stderr,
-            "New connection accepted from %s:%d\n",
+            "\033[1;35m[ SERVER ]\033[0m \033[1;32msocket.c:\033[0m New connection accepted from %s:%d\n",
             inet_ntoa(peer.sin_addr),
             ntohs(peer.sin_port));
         return client_socket;

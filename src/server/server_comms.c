@@ -40,14 +40,14 @@ response s_read(Player *p) {
 		ret = comms_read(p->fd, &p->active.header, &p->h_inbuf, sizeof(PacketHeader));
 		if (ret == READ_SUCCESS) {
 			p->active.header.length = ntohs(p->active.header.length);
-			printf("server awaiting for type %d for %d\n", p->active.header.type, p->active.header.length); 
+			printf("\033[1;35m[ SERVER ]\033[0m \033[1;33mserver_comms.c:\033[0m Server awaiting for packet of type \033[1;33m%d\033[0m for \033[1;33m%d bytes\033[0m\n", p->active.header.type, p->active.header.length); 
 			p->c_state = PAYLOAD;
 
 			if (p->active.header.length > 0) {
 				p->active.data = malloc(p->active.header.length);
 				if (!p->active.data) {
+					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Server side fatal error in malloc, likely out of memory, printing error log and terminating:\n\t");
 					perror("malloc");
-					printf("serverside break\n");
 					exit(1); // server should never actually exit but if something breaks in the malloc then we break. 
 							 // this just prevents a segfault later because theres no way around it later on.
 				}
@@ -59,7 +59,7 @@ response s_read(Player *p) {
 					p->ready = 1;
 					return READ_SUCCESS;
 				} else {
-					printf("AHHHHHHHH\n");
+					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Did not receive proper header from Player \033[1;33m%s\033[0m.\n", p->name);
 				}
 			}
 		} else { 
@@ -70,7 +70,7 @@ response s_read(Player *p) {
 	if (p->c_state == PAYLOAD) {
 		ret = comms_read(p->fd, p->active.data, &p->p_inbuf, p->active.header.length);
 		if (ret == READ_SUCCESS) {
-			printf("server read type for data %s\n", p->active.data); 
+			printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received packet from Player \033[1;33m%s\033[0m of type \033[1;33m%d\033[0m containing \033[1;33m%d bytes\033[0m containing data:\n\t\033[1;37m%s\033[0m\n", p->name, p->active.header.type, p->active.header.length, p->active.data); 
 			p->c_state = HEADER;
 			p->h_inbuf = 0;
 			p->p_inbuf = 0;
@@ -127,7 +127,7 @@ response s_listen(int max_time) {
 					if (ret == READ_SUCCESS) {
 						fd_count++;
 					} else if (ret == CLIENT_DISCONNECT) {
-						printf("Player %s disconnected, what a loser.\n", players[i].name);
+						printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Received disconnect signal as response from \033[1;33m%s\033[0m. Disconnecting user.\n", players[i].name);
 						close(players[i].fd);
 						players[i].fd = -1;
 
@@ -149,6 +149,3 @@ response s_listen(int max_time) {
 response s_slide(int fd, Packet *p) {
 	return comms_send(fd, p);
 }
-
-// TODO: make clear responses call apparently? idk what that means still
-//

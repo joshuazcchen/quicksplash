@@ -57,7 +57,7 @@ void free_cards(Card ** cards) {
 // draws a random card
 Card* draw_random(Card** cards) {
     int rand_index = rand() % (PROMPT_COUNT-1); // generate random number between 0 and PROMPT_COUNT
-    printf("the random number i rolled is: %d \n ", rand_index);
+    printf("\033[1;35m[ SERVER ]\033[0m\033[1;36m cards.c:\033[0m Server has drawn card with prompt %s.\n",cards[rand_index]->prompt_text);
     return  cards[rand_index];
 }
 

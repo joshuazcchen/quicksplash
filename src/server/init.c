@@ -14,34 +14,40 @@
 #include "protocol.h"
 #include "lobby.h"
 #include <signal.h>
+#include <time.h> // for the seed!!!
 
 Player players[LOBBY_SIZE];
 
 int main() {
+    printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Starting server.");
 	signal(SIGPIPE, SIG_IGN);
+
+	srand(time(NULL)); // seed the time so that we stop getting port 50935
 	int port = (rand() % (65000 - 30001) + 30000);
     struct sockaddr_in *self = init_server_addr(port);
     int listenfd = set_up_server_socket(self, 5);
 
-    printf("Lobby ready, opened on port %d and awaiting connections\n", port);
+	printf("\033[2J\n"); // clear screen before any logging happens.
+    printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Successfully initialized server on port \033[1;33m%d\033[0m and now awaiting responses.\n", port);
     start_lobby(listenfd);
 
     if (setup_game() == GAME_SUCCESS){
-        printf("CARDS INITIALIZED\n");
+        printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Successfully initialized cards.\n");
     }
 
     if(game_loop(2) == GAME_SUCCESS){
-       printf("GOOD!\n");
+       printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Game loop returned with GAME_SUCCESS.\n");
     }
 
     if(determine_game_winner()==GAME_SUCCESS){
-         printf("game winner picked!\n");
+         printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Selected a winner.\n");
     }
 
     if (wrap_up_game() == GAME_SUCCESS){
-        printf("GAME ENDED WOWWWWWWWWWWWWWWWWWWWWWWWWW\n");
+        printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Game finished, beginning cleanup processes.\n");
     }
 
     free(self);
+    printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Cleanup processes finished, terminating myself now.\n");
     return 0;
 }

@@ -30,8 +30,8 @@ response c_read() {
 			if (active.header.length > 0) {
 				active.data = malloc(active.header.length);
 				if (!active.data) {
+					printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31mclient_comms.c:\033[0m Failed to read header.\n\t"); // i dont think i actually get an errno here because technically nothing sys went wrong.
 					perror("malloc");
-					printf("smth broke in reading the header and allocating the payload data size\n");
 					exit(1); // if this hapepns then the client will die anyways, so might as well die on our terms.
 							 // since we'd segfault faster than ever if it fails to alloc data.
 				}
@@ -45,7 +45,7 @@ response c_read() {
 					ready = 1;
 					return READ_SUCCESS; // dont even bother reading and just parse thru that it was a success if its == 0 len.
 				} else {
-					printf("nothing in header len\n"); // i dont think i actually get an errno here because technically nothing sys went wrong.
+					printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31mclient_comms.c:\033[0m Malformed header.\n"); // i dont think i actually get an errno here because technically nothing sys went wrong.
 					exit(1); // this client is sending malformed headers so kill it before it can do more harm.
 				}
 			} 
@@ -59,7 +59,6 @@ response c_read() {
 		ret = comms_read(s_socket, active.data, &p_inbuf, active.header.length);
 		if (ret == READ_SUCCESS) {
 			// if it succeeds we can just reset
-			printf("success here\n");
 			c_state = HEADER;
 			h_inbuf = 0;
 			p_inbuf = 0;

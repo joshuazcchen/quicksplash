@@ -1,6 +1,3 @@
-// this is the helper function from lab 10
-// this is a header joshua
-
 #ifndef _SOCKET_H_
 #define _SOCKET_H_
 
