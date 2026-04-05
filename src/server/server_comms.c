@@ -16,7 +16,7 @@ extern int PLR_COUNT;
 // sends a packet from the server to each of the clients.
 // it is imperative that the client does not edit this. i dont think itll actually break anything, but it is probably just best convention
 response s_send(Packet *p) {
-    for (int i = 0; i < LOBBY_SIZE; i++) {
+    for (int i = 0; i < PLR_COUNT; i++) {
 		// same check as before but i figure its good to comment:
 		// this basically just verifies that its not trying to write to the host stdin/stdout/stderr
         if (players[i].fd > 2) {
