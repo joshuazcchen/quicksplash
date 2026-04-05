@@ -18,7 +18,7 @@ extern int ready;
 int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
 
-// BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
+				   // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
 	printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received, exiting with code %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
 	if (s_socket != -1) {
@@ -56,7 +56,7 @@ int main() {
 		if (c_send(&p) == SEND_SUCCESS) {
 			printf("\033[1;36m[ CLIENT ]\033[0m \033[1;32minit.c:\033[0m Joined as \033[1;33m%s\033[0m.\n", name);
 			free(p.data);
-			
+
 			ready = 0;
 			while (!ready) {
 				if (c_read() == CLIENT_DISCONNECT) {
@@ -129,7 +129,7 @@ int main() {
 			printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Failed to send join packet.\n");
 			exit(1);
 		}
-		
+
 		while (1) {
 			response ret = c_read();
 			if (ret == CLIENT_DISCONNECT) {
@@ -139,14 +139,34 @@ int main() {
 			}
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (ret == READ_SUCCESS && ready) {
-				Card rec = pkttoc(&active);
 				if (active.header.type == PKT_CARD) {
+					Card rec = pkttoc(&active);
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
 					Packet reply = strtopkt(PKT_REPLY, prompt_response);
 					c_send(&reply);
 					free(prompt_response);
 					free(reply.data);
+					if (rec.prompt_text != NULL) free(rec.prompt_text);
+
+					// this is effectively the same code as in the free card, but basically just moved to here.
+					// frees responses attached to the card to clear out the 40byte memory leak
+					if (rec.responses != NULL) {
+						for (int i = 0; i < LOBBY_SIZE; i++) {
+							if (rec.responses[i] != NULL) {
+								if (rec.responses[i]->response != NULL) {
+									free(rec.responses[i]->response);
+								}
+								if (rec.responses[i]->player != NULL) {
+									// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+									free(rec.responses[i]->player); // clean up on the clientside
+								}
+								free(rec.responses[i]);
+							}
+						}
+						free(rec.responses);
+					}
 				} else if (active.header.type == PKT_VOTE) {
+					Card rec = pkttoc(&active);
 					show_vote_card(rec, LOBBY_SIZE);
 					char vote_response[8];
 					int index = -1;
@@ -164,7 +184,7 @@ int main() {
 
 					// get player id
 					int pid = rec.responses[index]->player->p_id;
-					
+
 					char pid_str[12]; 
 					snprintf(pid_str, sizeof(pid_str), "%d", pid);
 					Packet vote = strtopkt(PKT_VOTE,pid_str);
@@ -173,31 +193,50 @@ int main() {
 
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
+					if (rec.prompt_text != NULL) free(rec.prompt_text);
+
+					// this is effectively the same code as in the free card, but basically just moved to here.
+					// frees responses attached to the card to clear out the 40byte memory leak
+					if (rec.responses != NULL) {
+						for (int i = 0; i < LOBBY_SIZE; i++) {
+							if (rec.responses[i] != NULL) {
+								if (rec.responses[i]->response != NULL) {
+									free(rec.responses[i]->response);
+								}
+								if (rec.responses[i]->player != NULL) {
+									// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+									free(rec.responses[i]->player); // clean up on the clientside
+								}
+								free(rec.responses[i]);
+							}
+						}
+						free(rec.responses);
+					}
 				} else if (active.header.type == PKT_GAME_END) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
 					if (active.data != NULL) free(active.data);
 					exit(0);
 				}
 
-				if (rec.prompt_text != NULL) free(rec.prompt_text);
+	//			if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 				// this is effectively the same code as in the free card, but basically just moved to here.
 				// frees responses attached to the card to clear out the 40byte memory leak
-				if (rec.responses != NULL) {
-					for (int i = 0; i < LOBBY_SIZE; i++) {
-						if (rec.responses[i] != NULL) {
-							if (rec.responses[i]->response != NULL) {
-								free(rec.responses[i]->response);
-							}
-							if (rec.responses[i]->player != NULL) {
-								// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
-								free(rec.responses[i]->player); // clean up on the clientside
-							}
-							free(rec.responses[i]);
-						}
-					}
-					free(rec.responses);
-				}
+	//			if (rec.responses != NULL) {
+	//				for (int i = 0; i < LOBBY_SIZE; i++) {
+	//					if (rec.responses[i] != NULL) {
+	//						if (rec.responses[i]->response != NULL) {
+	//							free(rec.responses[i]->response);
+	//						}
+	//						if (rec.responses[i]->player != NULL) {
+	//							// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+	//							free(rec.responses[i]->player); // clean up on the clientside
+	//						}
+	//						free(rec.responses[i]);
+	//					}
+	//				}
+	//				free(rec.responses);
+	//			}
 
 				free(active.data);
 				active.data = NULL;
