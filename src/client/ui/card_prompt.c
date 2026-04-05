@@ -7,7 +7,7 @@
 static void prompt_print_line(char* start_pad, int width, char* text) {
 	char format[64];
 	if (width < 1) width = 1;
-	snprintf(format, sizeof(format), "%s│%%-%d.%ds│\n", start_pad, width, width);
+	snprintf(format, sizeof(format), "%s│%%-*.*s│\n", start_pad);
 	justify_text_format(format, width, width, text);
 }
 
