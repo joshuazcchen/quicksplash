@@ -70,7 +70,7 @@ int main() {
 				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now the \033[1;33mHost\033[0m.\n\t\033[1;37mPress any key to start the game.\033[0m\n");
 				fflush(stdout);
 			} else {
-				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now a \033[1;33mGuest\033[0m.\n\t\033[1;37mPress wait for the Host to start the game.\033[0m\n");
+				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now a \033[1;33mGuest\033[0m.\n\t\033[1;37mPlease wait for the Host to start the game.\033[0m\n");
 			}
 
 			if (active.data != NULL) {
