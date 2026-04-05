@@ -54,10 +54,6 @@ int main() {
 				Card rec = pkttoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text ? rec.prompt_text : "[no text]");
 
-				// TODO: resolving merge conflicts, this is a bit funky, not sure if this will break on active since it will
-				// not necessarily free the things until after show_vote_card and show-card_prompt, not sure how those work
-				// not gonna bother checkign rn.
-				printf("CHECKING HEADER TYPE");
 				if (active.header.type == PKT_CARD) {
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
 					Packet reply = strtopkt(PKT_REPLY, prompt_response);
