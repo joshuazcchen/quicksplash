@@ -19,7 +19,9 @@ response s_send(Packet *p) {
 		// same check as before but i figure its good to comment:
 		// this basically just verifies that its not trying to write to the host stdin/stdout/stderr
         if (players[i].fd > 2) {
-            comms_send(players[i].fd, p);
+            if (comms_send(players[i].fd, p) == SEND_FAIL) {
+				return SEND_FAIL; // if one single send failed, this should return a failure...
+			}
         }
     }
     // this is lowkey a fake success but idk how to actually manage the lobby size variable here tbh.
