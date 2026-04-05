@@ -69,7 +69,7 @@ Packet ctop(Card c) {
 			if (c.responses[i] != NULL && c.responses[i]->player != NULL && c.responses[i]->response != NULL) {
 				int needed = snprintf(NULL, 0, "\x1E%d\x1F%s\x1F%s", c.responses[i]->player->p_id, c.responses[i]->player->name, c.responses[i]->response);
 				if (needed > 0) {
-					len += (size_t) needed;
+					len += needed;
 				}
 			}
 		}
@@ -84,7 +84,7 @@ Packet ctop(Card c) {
 	if (c.responses != NULL) {
 		for (int i = 0; i < LOBBY_SIZE; i++) {
 			if (c.responses[i] != NULL && c.responses[i]->player != NULL && c.responses[i]->response != NULL) {
-				used += (size_t) snprintf(p.data + used, len - used, "\x1E%d\x1F%s\x1F%s", c.responses[i]->player->p_id, c.responses[i]->player->name, c.responses[i]->response);
+				used += snprintf(p.data + used, len - used, "\x1E%d\x1F%s\x1F%s", c.responses[i]->player->p_id, c.responses[i]->player->name, c.responses[i]->response);
 			}
 		}
 	}
