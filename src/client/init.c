@@ -206,6 +206,8 @@ int main() {
 								// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
 								free(rec.responses[i]->player); // clean up on the clientside
 							}
+							// fuck i forgot to free the response
+							free(rec.responses[i]);
 						}
 					}
 				}
