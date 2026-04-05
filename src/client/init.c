@@ -9,6 +9,8 @@
 #include "protocol.h"
 #include <string.h>
 #include <unistd.h>
+#include <sys/select.h>
+
 
 int s_socket = -1;
 extern Packet active;
@@ -53,7 +55,6 @@ int main() {
 				free(active.data);
 				active.data = NULL;
 			}
-
 			ready = 0;
 
 			fd_set fds;
