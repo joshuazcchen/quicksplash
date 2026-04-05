@@ -4,10 +4,13 @@
 #include "client_ui_vote.h"
 
 static void vote_print_line(char* pad, int width, char* text) {
-	char format[64];
+	char format[64] = {0};
 	if (width < 1) width = 1;
-	snprintf(format, sizeof(format), "%s│%%-%d.%ds│\n", pad, width, width);
+	// printf("tryna format\n");
+	snprintf(format, sizeof(format), "%s│%%-*.*s│\n", pad);
+	// printf("managed to format: %s\n", format);
 	justify_text_format(format, width, width, text);
+	// printf("managed to justify\n");
 }
 
 void ui_show_vote_card(Card card, int response_count) {
@@ -34,9 +37,11 @@ void ui_show_vote_card(Card card, int response_count) {
 	display_n_times("─", inner_width);
 	printf("╮\n");
 
+	// printf("issue could be here\n");
 	vote_print_line(start_pad, inner_width, "VOTE NOW");
 	vote_print_line(start_pad, inner_width, "Original card:");
 	vote_print_line(start_pad, inner_width, card.prompt_text ? card.prompt_text : "[missing prompt]");
+	// printf("or after\n");
 
 	printf("%s├", start_pad);
 	display_n_times("─", inner_width);

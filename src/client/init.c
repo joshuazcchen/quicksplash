@@ -14,6 +14,7 @@
 
 int s_socket = -1;
 extern Packet active;
+<<<<<<< HEAD
 extern int ready; 
 int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
@@ -141,7 +142,7 @@ int main() {
 						}
 					}
 					// so this still causes a crash TODO kai
-					//show_vote_card(rec, LOBBY_SIZE);
+					show_vote_card(rec, LOBBY_SIZE);
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}

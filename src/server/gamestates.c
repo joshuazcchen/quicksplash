@@ -8,7 +8,7 @@
 #include <string.h>
 #include "server_comms.h"
 #include "protocol.h"
-extern Player players[1];
+extern Player players[LOBBY_SIZE];
 extern int PLR_COUNT;
 Card **cards;
 Card * drawn_card;
@@ -35,11 +35,13 @@ response play_round() {
 }
 
 response await_responses() {
-    drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
-    for(int i = 0; i < LOBBY_SIZE; i++){
+    printf("There are currently %d players \n",PLR_COUNT);
+
+    drawn_card->responses = malloc(sizeof(Response *)*PLR_COUNT);
+    for(int i = 0; i < PLR_COUNT; i++){
         drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
         drawn_card->responses[i]->player = &players[i]; // iterate through player array 
-        printf("player pid: %d \n",drawn_card->responses[i]->player->p_id);
+        printf("initialized player response for PID: %d \n",drawn_card->responses[i]->player->p_id);
         drawn_card->responses[i]->response = NULL; 
     }
     
@@ -54,7 +56,6 @@ response await_responses() {
         printf("responses recorded and timeout \n");
         for(int i = 0; i < PLR_COUNT; i++){
             for(int j = 0; j < PLR_COUNT; j++){
-
                 if(drawn_card->responses[j]->player->p_id == players[i].p_id){
                     drawn_card->responses[j]->response = pkttostr(&(players[i].active));
                     printf("found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, drawn_card->responses[j]->response);
