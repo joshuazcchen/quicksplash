@@ -170,6 +170,22 @@ int main() {
 						}
 					}
 					show_vote_card(rec, LOBBY_SIZE);
+					char vote_response[3];
+					get_str_to_ptr(vote_response, 2);
+
+					// convert input to index
+					int index = strtol(vote_response, NULL, 10) - 1;
+
+					// get player id
+					int pid = rec.responses[index]->player->p_id;
+					
+					printf("player voted PID %d\n", pid);
+					char pid_str[12]; 
+					snprintf(pid_str, sizeof(pid_str), "%d", pid);
+					Packet vote = strtopkt(PKT_VOTE,pid_str);
+					c_send(&vote);
+					free(vote.data);
+
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
 				} else {
