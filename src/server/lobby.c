@@ -95,17 +95,12 @@ void start_lobby(int listenfd) {
 						if (players[i].p_id == 1) {
 							printf("game start\n");
 							started = 1;
-							free(pkt->data);
-							char* plrct = malloc(sizeof(char)*8);
-							snprintf(plrct, 8, "%d", PLR_COUNT);
+							char plrct[32];
+							snprintf(plrct, 32, "%d", PLR_COUNT);
 							printf("%s", plrct);
 							Packet pktstart = strtopkt(PKT_START, plrct);
-							for (int c = 0; c < PLR_COUNT; c++) {
-								if (players[c].fd > 2) {
-									comms_send(players[c].fd, &pktstart);
-								}
-							}
-							free(plrct);
+							s_send(&pktstart);
+							free(pkt->data);
 							free(pktstart.data);
 							pkt->data = NULL;
 							return;

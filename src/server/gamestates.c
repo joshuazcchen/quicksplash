@@ -37,12 +37,16 @@ response play_round() {
 response await_responses() {
     printf("There are currently %d players \n",PLR_COUNT);
 
-    drawn_card->responses = malloc(sizeof(Response *)*PLR_COUNT);
-    for(int i = 0; i < PLR_COUNT; i++){
-        drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
-        drawn_card->responses[i]->player = &players[i]; // iterate through player array 
-        printf("initialized player response for PID: %d \n",drawn_card->responses[i]->player->p_id);
-        drawn_card->responses[i]->response = NULL; 
+    drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
+    for(int i = 0; i < LOBBY_SIZE; i++){
+		if (players[i].fd > 2) {
+			drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
+			drawn_card->responses[i]->player = &players[i]; // iterate through player array 
+			printf("initialized player response for PID: %d \n",drawn_card->responses[i]->player->p_id);
+			drawn_card->responses[i]->response = NULL; 
+		} else {
+			drawn_card->responses[i] = NULL;
+		}
     }
     
 	Packet p = ctop(*(drawn_card)); 

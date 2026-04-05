@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+extern int PLR_COUNT;
 // idk if we need this to be an actual independent copy of the string, but i think it should be ok so long as the client never modifies it.
 char* ptos(Packet *p) {
     return p->data;
@@ -65,7 +66,7 @@ Packet ctop(Card c) {
 	int len = 0;
 	len += strlen(c.prompt_text);
 	if (c.responses != NULL) {
-		for (int i = 0; i < LOBBY_SIZE; i++) {
+		for (int i = 0; i < PLR_COUNT; i++) {
 			// long statement but all it is is basically just verifying nothing we're about to use is null.
 			// which would result in a segfault.
 			// or many.
@@ -88,7 +89,7 @@ Packet ctop(Card c) {
 
 	if (c.responses != NULL) {
 		char buf[2048]; // temporary buffer we should probably do the proper calculation here later on for what this should actually be but honestly at this point i just want this thing to work please.
-		for (int i = 0; i < LOBBY_SIZE; i++) {
+		for (int i = 0; i < PLR_COUNT; i++) {
 			if (c.responses[i] != NULL && c.responses[i]->player != NULL && c.responses[i]->response != NULL) {
 				snprintf(buf, sizeof(buf), "\x1E%d\x1F%s\x1F%s", c.responses[i]->player->p_id, c.responses[i]->player->name, c.responses[i]->response);
 				strcat(p.data, buf);
