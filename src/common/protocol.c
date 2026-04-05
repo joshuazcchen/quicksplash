@@ -94,7 +94,7 @@ Packet ctop(Card c) {
 			}
 		}
 	}
-	printf("sending packet string: %s \n", p.data);
+	printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mprotocol.c:\033[0m Sending packet containing data:\n\t\033[1;37m%s\033[0m\n", p.data);
     return p;
 }
 
