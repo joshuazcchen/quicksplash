@@ -146,5 +146,9 @@ response s_listen(int max_time) {
     }
 }
 
+response s_slide(int fd, Packet *p) {
+	return comms_send(fd, p);
+}
+
 // TODO: make clear responses call apparently? idk what that means still
 //

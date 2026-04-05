@@ -28,6 +28,7 @@ typedef enum {
 	PKT_START = 0,
 	PKT_QUIT = -1, // client disconnect
 	PKT_PLR_DC = -1,
+	PKT_GAME_END = -2 // game end
 } pkt_type; // REDOING BECAUSE WE HAVE TOO MANY THINGS NAMED P_ LOL. PACKETS ARE NOW PKT
 
 typedef struct {
