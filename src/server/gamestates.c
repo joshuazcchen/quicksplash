@@ -34,8 +34,8 @@ response play_round() {
 }
 
 response await_responses() {
-    drawn_card->responses = malloc(sizeof(Response *)*1);
-    for(int i = 0; i < 1; i++){
+    drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
+    for(int i = 0; i < LOBBY_SIZE; i++){
         drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
         drawn_card->responses[i]->player = &players[i]; // iterate through player array 
         printf("player pid: %d \n",drawn_card->responses[i]->player->p_id);
@@ -79,7 +79,6 @@ response wrap_up_game() {
      for(int i = 0; i < 1; i++){
          players[i].round_wins = 0;
     }
-    cards = generate_cards();
     free_cards(cards);
     cards = NULL;
     return GAME_SUCCESS;
@@ -102,6 +101,7 @@ response initiate_vote() {
     if(s_send(&p) == GAME_SUCCESS){
         printf("Sending the voting options to players \n");
     }
+	free(p.data);
 
     if(s_listen(60) == TIMEOUT){ // time limit to check for responses
         printf("recorded votes and is now tallying the votes\n");

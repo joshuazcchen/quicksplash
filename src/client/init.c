@@ -67,7 +67,11 @@ int main() {
 				} else if (active.header.type == PKT_VOTE) {
 					printf("DOES THIS WORK?");
 					for(int i = 0; i < LOBBY_SIZE; i++){
-						printf("client recieved pid %d and with their response as %s \n",rec.responses[i]->player->p_id, rec.responses[i]->response);
+						if (rec.responses[i] != NULL && rec.responses[i]->response != NULL) {
+							printf("client recieved pid %d and with their response as %s \n",rec.responses[i]->player->p_id, rec.responses[i]->response);
+						} else {
+							printf("no\b");
+						}
 					}
 					// show_vote_card(rec, LOBBY_SIZE);
 				} else {

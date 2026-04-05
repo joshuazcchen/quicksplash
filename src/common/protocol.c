@@ -18,8 +18,46 @@ Card ptoc(Packet *p) {
 	// since the packets are funkier here but we also have an easy way to guarantee we have exactly the size we need,
 	// might as well check that we have a proper packet like we do everywhere else.
 	if (p->header.length > 0 && p->data != NULL) {
-		c.prompt_text = malloc(p->header.length);
-		strcpy(c.prompt_text, p->data);
+		char *data_copy = malloc(p->header.length);
+		strcpy(data_copy, p->data);
+
+		char* token = strtok(data_copy, "\x1E"); // use the record separator from ASCII
+		if (token != NULL) {
+			c.prompt_text = malloc(p->header.length);
+			strcpy(c.prompt_text, p->data);
+		}
+		c.responses = malloc(sizeof(Response*) * LOBBY_SIZE);
+		for (int i = 0; i < LOBBY_SIZE; i++) {
+			c.responses[i] = NULL;
+		}
+
+		int resp_id = 0;
+		while ((token = strtok(NULL, "\x1E")) != NULL && resp_id < LOBBY_SIZE) {
+			char* first = strchr(token, '\x1F'); // use the unit separator from ASCII
+												 // basically just because we cant ever have the client use these symbols otherwise itll break.
+			if (first != NULL) {
+				*first = '\0';
+				char* pid_str = token;
+				char* str_buf = first + 1;
+
+				char* second = strchr(str_buf, '\x1F');
+				if (second != NULL) {
+					*second = '\0';
+					char* name = str_buf;
+					char* resp_str = second + 1;
+					
+					c.responses[resp_id] = malloc(sizeof(Response));
+					c.responses[resp_id]->player = malloc(sizeof(Player));
+					memset(c.responses[resp_id]->player, '\0', sizeof(Player));
+					c.responses[resp_id]->player->p_id = atoi(pid_str);
+					strncpy(c.responses[resp_id]->player->name, name, 31);
+					c.responses[resp_id]->response = malloc(strlen(resp_str) + 1);
+					strcpy(c.responses[resp_id]->response, resp_str);
+					resp_id++;
+				}
+			}
+		}
+		free(data_copy);
 	}
     return c;
 }
@@ -27,11 +65,41 @@ Card ptoc(Packet *p) {
 Packet ctop(Card c) {
     Packet p;
     p.header.type = PKT_CARD;
-    //memset(&p.header, '\0', sizeof(PacketHeader));
-	p.header.length = strlen(c.prompt_text) + 1;
-	p.data = malloc(p.header.length);
+	int len = 0;
+	len += strlen(c.prompt_text);
+	if (c.responses != NULL) {
+		for (int i = 0; i < LOBBY_SIZE; i++) {
+			// long statement but all it is is basically just verifying nothing we're about to use is null.
+			// which would result in a segfault.
+			// or many.
+			// which blames everything except itself.
+			if (c.responses[i] != NULL && c.responses[i]->player != NULL && c.responses[i]->response != NULL) {
+				len += 62 + strlen(c.responses[i]->player->name) + strlen(c.responses[i]->response); // 62 is a bit of a magic number but its basically just the necessary padding to make this compile with the overall thing.
+																									 // since we're basically simulating a formatting string.
+				// the final string would basically be "\x1E%d\x1F%s\x1F%s" with all of the delimiters.
+				// So in lieu of actually formatting it properly and using snprintf and such, we just use 30 because it is 10pm, i have a test in 4 days, and i have not studied for it.
+				// 62 is thanks to Erik, i asked him for a random number from 20 to 100
+			}
+		}
+	}
+	len += 1;
+	p.data = malloc(len);
+	memset(p.data, 0, len);
+	p.header.length = len;
+
 	strcpy(p.data, c.prompt_text);
-	printf("sending packet string: n %s \n", p.data);
+
+	if (c.responses != NULL) {
+		char buf[2048]; // temporary buffer we should probably do the proper calculation here later on for what this should actually be but honestly at this point i just want this thing to work please.
+		for (int i = 0; i < LOBBY_SIZE; i++) {
+			if (c.responses[i] != NULL && c.responses[i]->player != NULL && c.responses[i]->response != NULL) {
+				snprintf(buf, sizeof(buf), "\x1E%d\x1F%s\x1F%s", c.responses[i]->player->p_id, c.responses[i]->player->name, c.responses[i]->response);
+				strcat(p.data, buf);
+			}
+		}
+
+	}
+	printf("sending packet string: %s \n", p.data);
     return p;
 }
 
