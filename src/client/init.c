@@ -70,9 +70,12 @@ int main() {
 						Packet pst = strtopkt(PKT_START, "orange");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("game started\n");
+							char c;
+							while ((c= getchar()) != '\n' && c != EOF);
 							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
+						break;
 					}
 
 					// in the event of server full or smth like that then just send the host a message to let them 
@@ -81,7 +84,8 @@ int main() {
 					//
 					// this also breaks non host players out of the loop bc they always end up here.
 					if (FD_ISSET(s_socket, &fds)) {
-						if (c_read() == READ_SUCCESS) {
+						c_read();
+						if (ready) {
 							break;
 						}
 					}
