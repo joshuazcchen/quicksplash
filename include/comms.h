@@ -15,8 +15,6 @@ typedef enum {
     TIMEOUT = 3
 } response;
 
-// TODO: move comment from comms.c to here abt returns
-// i do not remember AT ALL what i meant by that above comment. but it probably doesnt matter anymore because of the new system.
 response comms_read(int fd, void* buf, int *inbuf, int target);
 
 response comms_send(int fd, Packet *p);
