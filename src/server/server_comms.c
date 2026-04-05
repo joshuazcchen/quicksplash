@@ -130,9 +130,12 @@ response s_listen(int max_time) {
             }
         }
 		// TODO: JOSHUA KEEP TRACK OF NUMBERS OF PLAYER IN THE LOBBY PELASE BECEAUSE I ALSO NEED THIS THANKS
-		if(fd_count == 2){
+		if(fd_count == 1){
+			
 			return TIMEOUT;
 		}
     }
 }
 
+// TODO: MAKE CLEAR RESPONSES CALL
+// TODO: ALSO GET RID OF THE ORANGE PLEASE

@@ -8,13 +8,13 @@
 #include <string.h>
 #include "server_comms.h"
 #include "protocol.h"
-extern Player players[LOBBY_SIZE];
+extern Player players[1];
 Card **cards;
 Card * drawn_card;
 
 // all logic of intializing the game should go here
 response setup_game() {
-    for(int i = 0; i < LOBBY_SIZE; i++){
+    for(int i = 0; i < 1; i++){
          players[i].round_wins = 0;
     }
     cards = generate_cards();
@@ -23,7 +23,7 @@ response setup_game() {
 
 // start the round of the game
 response play_round() {
-    for(int i = 0; i < LOBBY_SIZE; i++){
+    for(int i = 0; i < 1; i++){
          players[i].round_votes = 0;
     }
     drawn_card = draw_random(cards);
@@ -34,8 +34,8 @@ response play_round() {
 }
 
 response await_responses() {
-    drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
-    for(int i = 0; i < LOBBY_SIZE; i++){
+    drawn_card->responses = malloc(sizeof(Response *)*1);
+    for(int i = 0; i < 1; i++){
         drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later
         drawn_card->responses[i]->player = &players[i]; // iterate through player array 
         printf("player pid: %d \n",drawn_card->responses[i]->player->p_id);
@@ -43,6 +43,7 @@ response await_responses() {
     }
     
 	Packet p = ctop(*(drawn_card)); 
+    p.header.type = PKT_CARD;
     if(s_send(&p) == GAME_SUCCESS){
         printf("Sent messages to players \n");
     }
@@ -50,8 +51,8 @@ response await_responses() {
 
     if(s_listen(10) == TIMEOUT){ // time limit to check for responses
         printf("responses recorded and timeout \n");
-        for(int i = 0; i < LOBBY_SIZE; i++){
-            for(int j = 0; j < LOBBY_SIZE; j++){
+        for(int i = 0; i < 1; i++){
+            for(int j = 0; j < 1; j++){
 
                 if(drawn_card->responses[j]->player->p_id == players[i].p_id){
                     drawn_card->responses[j]->response = pkttostr(&(players[i].active));
@@ -75,7 +76,7 @@ response end_round() {
 }
 
 response wrap_up_game() {
-     for(int i = 0; i < LOBBY_SIZE; i++){
+     for(int i = 0; i < 1; i++){
          players[i].round_wins = 0;
     }
     cards = generate_cards();
@@ -97,17 +98,19 @@ response initiate_vote() {
     // TODO: JOSHUA SEND THE RESPONSES TO THE PLAYERS
     // SEND ARRAY OF RESPONSES + PIDS TO PLAYERS 
 	Packet p = ctop(*(drawn_card));
+    p.header.type = PKT_VOTE;
     if(s_send(&p) == GAME_SUCCESS){
         printf("Sending the voting options to players \n");
     }
 
-    if(s_listen(5) == TIMEOUT){ // time limit to check for responses
+    if(s_listen(60) == TIMEOUT){ // time limit to check for responses
         printf("recorded votes and is now tallying the votes\n");
-        for(int i = 0; i < LOBBY_SIZE; i++){
-            for(int j = 0; j < LOBBY_SIZE; j++){
+        for(int i = 0; i < 1; i++){
+            for(int j = 0; j < 1; j++){
                 //TODO: JOSHUA MAKE SURE DATA ONLY COSNISTS OF A SINGLE INT
                 // PLAYER REPLIES WITH INDEX THAT CORRESPONDS TO PID OF THE RESPONSE, SEND BACK JUST THE PID TO INCREMENT VOTE COUNT
-                if(drawn_card->responses[j]->player->p_id == strtol(players[i].active.data, NULL, 10)){
+                printf("found pid %d, with response vote as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));
+                if(drawn_card->responses[j]->player->p_id == strtol(pkttostr(&players[i].active), NULL, 10)){
                     drawn_card->responses[j]->player->round_votes++; 
                 }
             }
@@ -118,7 +121,7 @@ response initiate_vote() {
 
 response determine_round_winner(){
     int max_index = 0; 
-    for(int i = 1; i < LOBBY_SIZE; i++){
+    for(int i = 1; i < 1; i++){
         if(players[i-1].round_votes <= players[i].round_votes){
             max_index = i;
         }
@@ -130,7 +133,7 @@ response determine_round_winner(){
 
 response determine_game_winner(){
     int max_index = 0; 
-    for(int i = 1; i < LOBBY_SIZE; i++){
+    for(int i = 1; i < 1; i++){
         if(players[i-1].round_wins <= players[i].round_wins){
             max_index = i;
         }

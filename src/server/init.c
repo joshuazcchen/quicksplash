@@ -29,11 +29,7 @@ int main() {
         printf("CARDS INITIALIZED\n");
     }
 
-    // while (1) {
-    //     sleep(1);
-    //     s_send(stop(P_JOIN, "lemongrass chicken"));
-    // }
-    if(game_loop(5) == GAME_SUCCESS){
+    if(game_loop(1) == GAME_SUCCESS){
        printf("GOOD!\n");
     }
 

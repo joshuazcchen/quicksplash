@@ -50,17 +50,23 @@ int main() {
 			sleep(1);
 			if (c_read() == READ_SUCCESS && ready) {
 				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
-				Card rec = ptoc(&active);
+				printf("JOSHUA UR SHIT IS SEGFALUTING");
+				Card rec = pkttoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text);
 				active.data = NULL;
 
 				// TODO: resolving merge conflicts, this is a bit funky, not sure if this will break on active since it will
 				// not necessarily free the things until after show_vote_card and show-card_prompt, not sure how those work
 				// not gonna bother checkign rn.
+				printf("CHECKING HEADER TYPE");
 				if (active.header.type == PKT_CARD) {
 					show_card_prompt(rec);
 				} else if (active.header.type == PKT_VOTE) {
-					show_vote_card(rec, LOBBY_SIZE);
+					printf("DOES THIS WORK?");
+					for(int i = 0; i < LOBBY_SIZE; i++){
+						printf("client recieved pid %d and with their response as %s \n",rec.responses[i]->player->p_id, rec.responses[i]->response);
+					}
+					// show_vote_card(rec, LOBBY_SIZE);
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text);
 				}
