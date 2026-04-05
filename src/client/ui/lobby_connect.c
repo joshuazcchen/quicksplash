@@ -19,6 +19,20 @@ static int server_select_left_pad(int width, int panel_width) {
 	return left_pad;
 }
 
+static void box_read_field_input(int left_pad, int row, int value_col_offset, int max_chars, int clear_chars, char* out) {
+	int col = left_pad + value_col_offset;
+	if (col < 1) col = 1;
+	if (clear_chars < max_chars) clear_chars = max_chars;
+
+	printf("\033[%d;%dH", row, col); // move cursor to the input position
+	display_n_times(" ", clear_chars); // clear the entire visible field area
+	printf("\033[%d;%dH\033[1;33m", row, col); // move cursor back to the input position and set color for input
+	fflush(stdout); // make sure the cursor moves before we read input
+
+	get_str_to_ptr(out, max_chars);
+	printf("\033[0m");
+}
+
 static void set_default_guest_username(char* name, int name_cap) {
 	static int seeded = 0;
 	int suffix;
@@ -126,8 +140,15 @@ void ui_server_select(char* name, char* port, char* addr) {
 	if (left_pad > 127) left_pad = 127;
 	memset(start_pad, ' ', left_pad);
 	start_pad[left_pad] = '\0';
-	printf("%s%s→ %s%s(default Guest##### | max 31 chars)%s ", start_pad, accent, reset, soft, reset);
-	get_str_to_ptr(name, 32);
+	if (panel_width >= 30) {
+		// Rows are based on current clear_screen behavior, which prints a leading newline.
+		// Therefore username value starts at row 7 and column offset 17 within the centered box.
+		// Then to clear the row for input, we can use the panel_width variable and remove the 17 chars before it.
+		box_read_field_input(left_pad, 7, 17, 32, panel_width - 17, name);
+	} else {
+		printf("%s%s→ %s%s(default Guest##### | max 31 chars)%s ", start_pad, accent, reset, soft, reset);
+		get_str_to_ptr(name, 32);
+	}
 	set_default_guest_username(name, 32);
 
 	server_select_render(name, port, addr, 1);
@@ -138,8 +159,13 @@ void ui_server_select(char* name, char* port, char* addr) {
 	if (left_pad > 127) left_pad = 127;
 	memset(start_pad, ' ', left_pad);
 	start_pad[left_pad] = '\0';
-	printf("%s%s→ %s%s(default 30000 | max 6 chars)%s ", start_pad, accent, reset, good, reset);
-	get_str_to_ptr(port, 7);
+	if (panel_width >= 30) {
+		// Port value row sits directly below username, so row 8 with same column offset of 17.
+		box_read_field_input(left_pad, 8, 17, 7, panel_width - 17, port);
+	} else {
+		printf("%s%s→ %s%s(default 30000 | max 6 chars)%s ", start_pad, accent, reset, good, reset);
+		get_str_to_ptr(port, 7);
+	}
 	if (strlen(port) == 0) strcpy(port, "30000");
 
 	server_select_render(name, port, addr, 2);
@@ -150,8 +176,13 @@ void ui_server_select(char* name, char* port, char* addr) {
 	if (left_pad > 127) left_pad = 127;
 	memset(start_pad, ' ', left_pad);
 	start_pad[left_pad] = '\0';
-	printf("%s%s→ %s%s(default 127.0.0.1 | max 29 chars)%s ", start_pad, accent, reset, good, reset);
-	get_str_to_ptr(addr, 30);
+	if (panel_width >= 30) {
+		// Server value row sits directly below port, so row 9.
+		box_read_field_input(left_pad, 9, 17, 30, panel_width - 17, addr);
+	} else {
+		printf("%s%s→ %s%s(default 127.0.0.1 | max 29 chars)%s ", start_pad, accent, reset, good, reset);
+		get_str_to_ptr(addr, 30);
+	}
 	if (strlen(addr) == 0) strcpy(addr, "127.0.0.1");
 
 	server_select_render(name, port, addr, 3);
