@@ -30,8 +30,12 @@ int main() {
         printf("CARDS INITIALIZED\n");
     }
 
-    if(game_loop(1) == GAME_SUCCESS){
+    if(game_loop(2) == GAME_SUCCESS){
        printf("GOOD!\n");
+    }
+
+    if(determine_game_winner()==GAME_SUCCESS){
+         printf("game winner picked!\n");
     }
 
     if (wrap_up_game() == GAME_SUCCESS){

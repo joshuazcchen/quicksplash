@@ -152,23 +152,57 @@ response initiate_vote() {
 
 response determine_round_winner(){
     int max_index = 0; 
-    for(int i = 1; i < PLR_COUNT; i++){
-        if(players[i-1].round_votes <= players[i].round_votes){
+    for (int i = 1; i < PLR_COUNT; i++) {
+        if (players[i].round_votes > players[max_index].round_votes) {
             max_index = i;
         }
     }
-    printf("PLAYER: %d WINS ROUND!",players[max_index].p_id);
-    players[max_index].round_wins += 1;
+    int tie_count = 0; 
+    for(int i = 0; i < PLR_COUNT; i++){
+        if(players[max_index].round_votes == players[i].round_votes){
+            tie_count++;
+        }
+    }
+    if(tie_count > 1){
+        printf("THERES A TIE \n");
+        for(int i = 0; i < PLR_COUNT;i++){
+            if (players[i].round_votes == players[max_index].round_votes) {
+                players[i].round_wins += 1;
+            }
+        }
+    }
+    else{
+        printf("PLAYER: %d WINS ROUND!\n", players[max_index].p_id);
+        players[max_index].round_wins += 1;
+    }
+
     return GAME_SUCCESS;
 }
 
 response determine_game_winner(){
     int max_index = 0; 
-    for(int i = 1; i < PLR_COUNT; i++){
-        if(players[i-1].round_wins <= players[i].round_wins){
+    for (int i = 1; i < PLR_COUNT; i++) {
+        if (players[i].round_wins > players[max_index].round_wins) {
             max_index = i;
         }
     }
-    printf("PLAYER: %d WINS GAME!",players[max_index].p_id);
+    int tie_count = 0; 
+    for(int i = 0; i < PLR_COUNT; i++){
+        if(players[max_index].round_wins == players[i].round_wins){
+            tie_count++;
+        }
+    }
+    if(tie_count > 1){
+        printf("THERES A TIE \n");
+        for(int i = 0; i < PLR_COUNT;i++){
+            if (players[i].round_wins == players[max_index].round_wins) {
+                printf("PLAYER: %d WINS GAME! with %d points \n",players[i].p_id,players[i].round_wins);
+            }
+        }
+    }
+    else{
+        printf("PLAYER: %d WINS GAME! with %d points \n",players[max_index].p_id,players[max_index].round_wins);
+    }
+   
     return GAME_SUCCESS;
 }
