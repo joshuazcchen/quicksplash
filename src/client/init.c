@@ -21,9 +21,9 @@ int main() {
 	}
 	// temporary, but gets the users name, the port they want to connect to and their address they want to connect to
 	clear_screen();
-	char name[32];
-	char port[7];
-	char s_address[30];
+	char name[32] = {0};  // remove valgrind issues with calling strlen() on empty/uninitialized strings
+	char port[7] = {0};
+	char s_address[30] = {0};
 
 	server_select(name, port, s_address);
 	int s_port = strtol(port, NULL, 10);
