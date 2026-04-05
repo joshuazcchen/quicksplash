@@ -12,32 +12,31 @@ response game_loop(int round_count){
     int rounds = round_count;
     // start round
     while(rounds > 0){
+        printf("\n");
         if(play_round() == GAME_SUCCESS){
-            printf("SUCESS\n");
+            printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m Round setup, starting game.\n");
         }
         // send round prompt to players
         // wait for all player responses
         if(await_responses()== GAME_SUCCESS){
-            printf("RESPONSES SENT AND RECORDED\n");
+            printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m Prompts sent, and have been recorded.\n");
         }
         // initiate voting
-        printf("Starting Vote \n");
         if (initiate_vote() == GAME_SUCCESS){
-            printf("vote starting\n");
+            printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m Voting options sent, and have been recorded.\n");
         }
         // determine winner or round
-        printf("looking for winner \n");
         if (determine_round_winner() == GAME_SUCCESS){
-            printf("WE HAVE A WINNER\n");
+            printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m A winner has been determined.\n");
         }
         // end round
-        printf("ending the round \n");
         if(end_round() == GAME_SUCCESS){
-            printf("ROUND ENDED\n");
+            printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m Round has sucessfully ended\n");
         }
         // repeat if game isnt over
         rounds--;
-        printf("rounds left: %d \n", rounds);
+        printf("\033[1;35m[ SERVER ]\033[0m\033[1;32m gamestates.c:\033[0m There is currently %d rounds left.\n",rounds);
+
     }
     return GAME_SUCCESS;
 }
