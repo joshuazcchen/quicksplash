@@ -133,7 +133,7 @@ response initiate_vote() {
 	free(p.data);
 
     if(s_listen(15) == TIMEOUT){ // time limit to check for responses
-        printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Received all votes or timeed out, server is ready to tally votes.\n");
+        printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Received all votes or timed out, server is ready to tally votes.\n");
         for(int i = 0; i < PLR_COUNT; i++){
 			if (players[i].fd == -1 || players[i].ready == 0) {
                 printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m No vote from %d\n", players[i].p_id);
