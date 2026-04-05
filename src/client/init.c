@@ -54,7 +54,9 @@ int main() {
 				active.data = NULL;
 			}
 
-			fd_set(fds);
+			ready = 0;
+
+			fd_set fds;
 			while (1) {
 				FD_ZERO(&fds);
 				FD_SET(STDIN_FILENO, &fds);
@@ -86,7 +88,12 @@ int main() {
 					if (FD_ISSET(s_socket, &fds)) {
 						c_read();
 						if (ready) {
-							break;
+							ready = 0;
+							if (active.header.type == PKT_START) {
+								free(active.data);
+								active.data = NULL;
+								break;
+							}
 						}
 					}
 				}

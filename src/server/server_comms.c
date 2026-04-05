@@ -130,8 +130,7 @@ response s_listen(int max_time) {
 
             }
         }
-		if(fd_count == 1){
-			
+		if(fd_count == PLR_COUNT){
 			return TIMEOUT;
 		}
     }

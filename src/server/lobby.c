@@ -96,13 +96,17 @@ void start_lobby(int listenfd) {
 							printf("game start\n");
 							started = 1;
 							free(pkt->data);
+							Packet pktstart = strtopkt(PKT_START, "START");
+							for (int c = 0; c < PLR_COUNT; c++) {
+								if (players[c].fd > 2) {
+									comms_send(players[c].fd, &pktstart);
+								}
+							}
+							free(pktstart.data);
 							pkt->data = NULL;
 							return;
 						}
 					}
-					free(pkt->data);
-					pkt->data = NULL;
-					players[i].ready = 0;
 				} else if (ret == CLIENT_DISCONNECT) {
 					close(players[i].fd);
 					players[i].state = DISCONNECTED;
