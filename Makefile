@@ -44,10 +44,12 @@ CLIENT_TEST_SRCS := \
 	src/client/ui/lobby_connect.c \
 	src/client/input.c
 
-.PHONY: all clean test
+.PHONY: all clean test small
 
 all: clean server client
 test: clean server test_client server_test
+small: CFLAGS = -Wall -Wextra -Os -Iinclude -flto -fno-ident
+small: clean server client shrink
 
 server: $(SERVER_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
@@ -60,6 +62,10 @@ server_test: $(SERVER_TEST_SRCS)
 
 test_client: $(CLIENT_TEST_SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+# this is completely and utterly useless but i like seeing small numbers.
+shrink:
+	-strip client server
 
 clean:
 	rm -f server client server_test test_client

@@ -20,7 +20,7 @@ response c_send(Packet *p) {
 }
 
 response c_read() {
-	response ret;
+	response ret = READ_FAIL; // make default value so make small doesnt warn
 	// read header 
 	if (c_state == HEADER) {
 		ret = comms_read(s_socket, &active.header, &h_inbuf, sizeof(PacketHeader));
