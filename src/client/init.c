@@ -140,7 +140,6 @@ int main() {
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (ret == READ_SUCCESS && ready) {
 				Card rec = pkttoc(&active);
-
 				if (active.header.type == PKT_CARD) {
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
 					Packet reply = strtopkt(PKT_REPLY, prompt_response);
@@ -176,10 +175,11 @@ int main() {
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
 				} else if (active.header.type == PKT_GAME_END) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
+					if (active.data != NULL) free(active.data);
 					exit(0);
 				}
 
-				if (rec.prompt_text) free(rec.prompt_text);
+				if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 				// this is effectively the same code as in the free card, but basically just moved to here.
 				// frees responses attached to the card to clear out the 40byte memory leak
@@ -196,6 +196,7 @@ int main() {
 							free(rec.responses[i]);
 						}
 					}
+					free(rec.responses);
 				}
 
 				free(active.data);

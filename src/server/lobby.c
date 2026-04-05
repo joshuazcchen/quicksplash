@@ -103,6 +103,10 @@ void start_lobby(int listenfd) {
 							return;
 						}
 					}
+					if (players[i].active.data != NULL) {
+						free(players[i].active.data);
+						players[i].active.data = NULL;
+					}
 				} else if (ret == CLIENT_DISCONNECT) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mlobby.c:\033[0m Player %s disconnected from lobby.\n", players[i].name);
 					close(players[i].fd);
