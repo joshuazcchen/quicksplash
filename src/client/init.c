@@ -159,11 +159,19 @@ int main() {
 						}
 					}
 					show_vote_card(rec, LOBBY_SIZE);
-					char vote_response[3];
-					get_str_to_ptr(vote_response, 2);
+					char vote_response[8];
+					int index = -1;
 
-					// convert input to index
-					int index = strtol(vote_response, NULL, 10) - 1;
+					while (1) {
+						get_str_to_ptr(vote_response, sizeof(vote_response));
+						index = strtol(vote_response, NULL, 10) - 1;
+
+						if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
+							break;
+						}
+
+						printf("Invalid choice. Please enter a valid response number: ");
+					}
 
 					// get player id
 					int pid = rec.responses[index]->player->p_id;
