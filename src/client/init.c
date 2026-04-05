@@ -142,8 +142,9 @@ int main() {
 							printf("no\n");
 						}
 					}
-					// so this still causes a crash TODO kai
 					show_vote_card(rec, LOBBY_SIZE);
+					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
+					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}

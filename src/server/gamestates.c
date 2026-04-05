@@ -35,7 +35,7 @@ response play_round() {
 }
 
 response await_responses() {
-    printf("There are currently %d players \n",PLR_COUNT);
+    printf("await_responses: There are currently %d players \n",PLR_COUNT);
 
     drawn_card->responses = malloc(sizeof(Response *)*LOBBY_SIZE);
     for(int i = 0; i < LOBBY_SIZE; i++){
@@ -62,7 +62,7 @@ response await_responses() {
             for(int j = 0; j < PLR_COUNT; j++){
                 if(drawn_card->responses[j]->player->p_id == players[i].p_id){
                     drawn_card->responses[j]->response = pkttostr(&(players[i].active));
-                    printf("found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, drawn_card->responses[j]->response);
+                    printf("await_responses: found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, drawn_card->responses[j]->response);
                 }
                 
             }
@@ -107,13 +107,16 @@ response initiate_vote() {
     }
 	free(p.data);
 
-    if(s_listen(60) == TIMEOUT){ // time limit to check for responses
+    if(s_listen(10) == TIMEOUT){ // time limit to check for responses
         printf("recorded votes and is now tallying the votes\n");
         for(int i = 0; i < PLR_COUNT; i++){
             for(int j = 0; j < PLR_COUNT; j++){
-                printf("found pid %d, with response vote as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));
+                printf("checking what player pid %d voted, they voted %d \n",players[i].p_id, (int)strtol(pkttostr(&players[i].active), NULL, 10));
+                // ASSUME THAT WHAT THE PLAYER SENDS BACK IS THE PID OF WHO IT VOTED 
                 if(drawn_card->responses[j]->player->p_id == strtol(pkttostr(&players[i].active), NULL, 10)){
+                    printf("found pid %d, with response vote as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));
                     drawn_card->responses[j]->player->round_votes++; 
+                    printf("Player now has %d votes \n",drawn_card->responses[j]->player->round_votes);
                 }
             }
         }
