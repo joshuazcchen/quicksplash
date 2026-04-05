@@ -20,7 +20,7 @@ int PLR_COUNT = 0; // this just guarantees that both the client and server have 
 
 // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
-	printf("\nSIGINT caught %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
+	printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received, exiting with code %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
 	if (s_socket != -1) {
 		Packet p = strtopkt(PKT_QUIT, "i ragequit");
 		c_send(&p); // we dont even need to check this, because if this fails it doesnt even matter.
@@ -54,24 +54,23 @@ int main() {
 	if (status == SEND_SUCCESS) {
 		Packet p = strtopkt(PKT_JOIN, name);
 		if (c_send(&p) == SEND_SUCCESS) {
-			printf("Joined as %s\n", name);
+			printf("\033[1;36m[ CLIENT ]\033[0m \033[1;32minit.c:\033[0m Joined as \033[1;33m%s\033[0m.\n", name);
 			free(p.data);
 			
 			ready = 0;
 			while (!ready) {
 				if (c_read() == CLIENT_DISCONNECT) {
-					printf("server killed you.\n");
+					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Connection dropped.\n");
 					exit(1);
 				}
 			}
 			int host = 0;
-			printf("%s\n", pkttostr(&active));
 			if (strcmp(pkttostr(&active), "YOU ARE HOST NOW CONGRATULATIONS") == 0) {
 				host = 1;
-				printf("you are host\n");
+				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now the \033[1;33mHost\033[0m.\n\t\033[1;37mPress any key to start the game.\033[0m\n");
 				fflush(stdout);
 			} else {
-				printf("you are not host\n");
+				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now a \033[1;33mGuest\033[0m.\n\t\033[1;37mPress wait for the Host to start the game.\033[0m\n");
 			}
 
 			if (active.data != NULL) {
@@ -97,8 +96,9 @@ int main() {
 						if (!host) continue;
 
 						Packet pst = strtopkt(PKT_START, "orange");
+						printf("\033[1;36m[ CLIENT ]\033[0m \032[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
 						if (c_send(&pst) == SEND_SUCCESS) {
-							printf("game started\n");
+							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet. Starting game.\n");
 							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
@@ -117,7 +117,6 @@ int main() {
 							if (active.header.type == PKT_START) {
 								//char* val = pkttostr(&active);
 								PLR_COUNT = atoi(pkttostr(&active)); 
-								printf("starting with %d players\n", PLR_COUNT);
 								free(active.data);
 								active.data = NULL;
 								break;
@@ -127,22 +126,20 @@ int main() {
 				}
 			}
 		} else {
-			printf("Error in sending join packet\n");
+			printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Failed to send join packet.\n");
 			exit(1);
 		}
 		
 		while (1) {
 			response ret = c_read();
 			if (ret == CLIENT_DISCONNECT) {
-				printf("Connection lost, server killed you or died\n");
+				printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Connection dropped.\n");
 				close(s_socket);
 				exit(1);
 			}
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (ret == READ_SUCCESS && ready) {
-				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = pkttoc(&active);
-				printf("\ncard got: %s\n", rec.prompt_text ? rec.prompt_text : "[no text]");
 
 				if (active.header.type == PKT_CARD) {
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
@@ -151,13 +148,6 @@ int main() {
 					free(prompt_response);
 					free(reply.data);
 				} else if (active.header.type == PKT_VOTE) {
-					for(int i = 0; i < LOBBY_SIZE; i++){
-						if (rec.responses[i] != NULL && rec.responses[i]->response != NULL) {
-							printf("client recieved pid %d and with their response as %s \n",rec.responses[i]->player->p_id, rec.responses[i]->response);
-						} else {
-							printf("no\n");
-						}
-					}
 					show_vote_card(rec, LOBBY_SIZE);
 					char vote_response[3];
 					get_str_to_ptr(vote_response, 2);
@@ -168,7 +158,6 @@ int main() {
 					// get player id
 					int pid = rec.responses[index]->player->p_id;
 					
-					printf("player voted PID %d\n", pid);
 					char pid_str[12]; 
 					snprintf(pid_str, sizeof(pid_str), "%d", pid);
 					Packet vote = strtopkt(PKT_VOTE,pid_str);
@@ -178,10 +167,8 @@ int main() {
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
 				} else if (active.header.type == PKT_GAME_END) {
-					printf("game over\n");
+					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
 					exit(0);
-				} else {
-					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}
 
 				if (rec.prompt_text) free(rec.prompt_text);

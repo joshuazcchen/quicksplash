@@ -56,7 +56,7 @@ void start_lobby(int listenfd) {
 						// hi im not sure why i split these its just that having a random green in the middle
 						// was bugging me a bit lol
                         sprintf(players[i].name, "%d", i); 
-						printf("Connection received from %d\n", players[i].fd);
+						printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Connection received from \033[1;33m%d\033[0m.\n", players[i].fd);
                         break;
                     }
                 }
@@ -78,9 +78,8 @@ void start_lobby(int listenfd) {
 							//players[i].state = READY;
 							PLR_COUNT++;
 							players[i].state = READY;
-							printf("%s joined properly\n", players[i].name);
+							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received join packet from \033[1;33m%d\033[0m, user added as \033[1;33m%s\033[0m.\n", players[i].p_id, players[i].name);
 							Packet host_pkt;
-							printf("%d", players[i].p_id);
 							if (players[i].p_id == 1) {
 								host_pkt = strtopkt(PKT_JOIN, "YOU ARE HOST NOW CONGRATULATIONS");
 							} else {
@@ -91,11 +90,11 @@ void start_lobby(int listenfd) {
 						} 
 					} else if (pkt->header.type == PKT_START) {
 						if (players[i].p_id == 1) {
-							printf("game start\n");
+							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet from host.\n");
 							started = 1;
 							char plrct[32];
 							snprintf(plrct, 32, "%d", PLR_COUNT);
-							printf("%s", plrct);
+							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Starting with \033[1;33m%d player(s)\033[0m.\n", PLR_COUNT);
 							Packet pktstart = strtopkt(PKT_START, plrct);
 							s_send(&pktstart);
 							free(pkt->data);
@@ -105,7 +104,7 @@ void start_lobby(int listenfd) {
 						}
 					}
 				} else if (ret == CLIENT_DISCONNECT) {
-					printf("player %s disconnected from lobby.\n", players[i].name);
+					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mlobby.c:\033[0m Player %s disconnected from lobby.\n", players[i].name);
 					close(players[i].fd);
 					players[i].state = DISCONNECTED;
 					players[i].fd = -1;
