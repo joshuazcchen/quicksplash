@@ -15,6 +15,9 @@
 int s_socket = -1;
 extern Packet active;
 extern int ready; 
+int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
+				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
+				   // TODO: disconnects
 
 int main() {
 	if (init_display() != 0) {
@@ -92,6 +95,8 @@ int main() {
 						if (ready) {
 							ready = 0;
 							if (active.header.type == PKT_START) {
+								//char* val = pkttostr(&active);
+								//PLR_COUNT = strtol(val, NULL, 10); 
 								free(active.data);
 								active.data = NULL;
 								break;
@@ -111,6 +116,12 @@ int main() {
 			// TODO: not actually here but i need to update teh game loop a bit better so that the client has a proper game loop;
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (c_read() == READ_SUCCESS && ready) {
+				if (active.header.type == PKT_START) {
+					char* val = pkttostr(&active);
+					PLR_COUNT = strtol(val, NULL, 10); 
+					printf("received it here of plrcount of %d\n", PLR_COUNT);
+					continue;
+				}
 				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = pkttoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text ? rec.prompt_text : "[no text]");
