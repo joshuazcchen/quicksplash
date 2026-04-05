@@ -79,7 +79,8 @@ Packet ctop(Card c) {
 	memset(p.data, 0, len);
 	p.header.length = len;
 
-	int used = snprintf(p.data + used, len - used, "%s", c.prompt_text);
+	int used = 0;
+	used += snprintf(p.data + used, len - used, "%s", c.prompt_text);
 
 	if (c.responses != NULL) {
 		for (int i = 0; i < LOBBY_SIZE; i++) {
