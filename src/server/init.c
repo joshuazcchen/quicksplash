@@ -19,10 +19,10 @@ Player players[LOBBY_SIZE];
 
 int main() {
 	signal(SIGPIPE, SIG_IGN);
-	int port = (rand() % (65000 - 30001) + 30000); 
+	int port = (rand() % (65000 - 30001) + 30000);
     struct sockaddr_in *self = init_server_addr(port);
     int listenfd = set_up_server_socket(self, 5);
-    
+
     printf("Lobby ready, opened on port %d and awaiting connections\n", port);
     start_lobby(listenfd);
 
