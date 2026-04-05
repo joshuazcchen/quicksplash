@@ -1,7 +1,5 @@
 #ifndef GAMESTRUCTS_H
 #define GAMESTRUCTS_H
-#define BUFFERSIZE 256
-#define buffersize 256 // TODO: why did i use two different ones???????????? i forgot that the header included this 
 #define MAX_PROMPT_SIZE 1000
 #define MAX_RESPONSE_SIZE 256
 #define PROMPT_COUNT 135
@@ -53,28 +51,18 @@ typedef enum {
     READY = 2
 } p_state;
 
-// DEPRECATED - Joshua
-//typedef struct {
-//    p_type type;
-//    char data[BUFFERSIZE];
-//} Packet; // data sent to and from the client, declare a specific id for type of info so it can be processed accordingly.
-
 typedef struct player { // have to have the player alias at the top too so we can self reference
     int p_id; // we can store the user's machine info somewhere inside this struct too so that we know who we're listening to from the serverside?
     int fd;
     char name[32];
 	p_state state; // this is player state not packet state, stupid naming.
-
-    // idk how else to do this so ig we got a staging area now. getting closer to accidentally making git by the minute
     Packet active;
 	pkt_state c_state; // stupid variable name just determines whether we already received a header
 	int h_inbuf; // header inbuf
 	int p_inbuf; // actual packet/payload inbuf
 	int ready;
-
     int round_votes; 
     int round_wins;
-
 } Player;
 
 typedef struct{

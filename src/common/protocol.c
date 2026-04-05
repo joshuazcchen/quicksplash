@@ -6,9 +6,6 @@
 
 // idk if we need this to be an actual independent copy of the string, but i think it should be ok so long as the client never modifies it.
 char* ptos(Packet *p) {
-    //p->data[BUFFERSIZE-1] = '\0';
-	// woah no more set buffersize!!! ^^^ 
-	// if this is all i need i will eat a shoe but i do genuinely think this is all i need LOL.
     return p->data;
 }
 
