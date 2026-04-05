@@ -14,7 +14,7 @@
 
 int s_socket = -1;
 extern Packet active;
-extern int ready; 
+extern int ready;
 
 int main() {
 	if (init_display() != 0) {
@@ -127,7 +127,7 @@ int main() {
 						}
 					}
 					// so this still causes a crash TODO kai
-					//show_vote_card(rec, LOBBY_SIZE);
+					show_vote_card(rec, LOBBY_SIZE);
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}
