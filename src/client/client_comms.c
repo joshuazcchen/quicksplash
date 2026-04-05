@@ -85,7 +85,7 @@ response c_read() {
 
 response c_connect(int port, char* addr) {
 	int s = connect_to_server(port, addr);
-	if (s) {
+	if (s >= 0) {
 		s_socket = s;
 		return SEND_SUCCESS;
 	} else {
