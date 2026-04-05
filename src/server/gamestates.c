@@ -67,6 +67,7 @@ response await_responses() {
 						drawn_card->responses[j]->response = strdup(pkttostr(&(players[i].active)));
                         printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Stored response %s for player PID %d in Response array.\n", drawn_card->responses[j]->response,drawn_card->responses[j]->player->p_id);
 						players[i].ready = 0;
+                        free(players[i].active.data);
 					}
                 }
                 
@@ -106,6 +107,7 @@ response wrap_up_game() {
     if(s_send(&p) == GAME_SUCCESS){
         printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Sent packet to terminate clients.\n");
     }
+    free(p.data);
 
      for(int i = 0; i < PLR_COUNT; i++){
          players[i].round_wins = 0;
@@ -145,10 +147,12 @@ response initiate_vote() {
                 if(drawn_card->responses[j]->player->p_id == strtol(pkttostr(&players[i].active), NULL, 10)){
                     drawn_card->responses[j]->player->round_votes++; 
                     printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Player PID %d now has %d votes.\n",drawn_card->responses[j]->player->p_id,drawn_card->responses[j]->player->round_votes);
+                    free(players[i].active.data);
                 }
             }
         }
     }
+    
     return GAME_SUCCESS;
 }
 
