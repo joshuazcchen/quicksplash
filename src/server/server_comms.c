@@ -8,7 +8,6 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-// TODO: swap this so its just an extern?
 #define LOBBY_SIZE 5
 extern Player players[LOBBY_SIZE];
 extern int PLR_COUNT;
@@ -136,5 +135,5 @@ response s_listen(int max_time) {
     }
 }
 
-// TODO: MAKE CLEAR RESPONSES CALL
-// TODO: ALSO GET RID OF THE ORANGE PLEASE
+// TODO: make clear responses call apparently? idk what that means still
+//

@@ -95,8 +95,6 @@ response player_leave() {
 
 response initiate_vote() {
     
-    // TODO: JOSHUA SEND THE RESPONSES TO THE PLAYERS
-    // SEND ARRAY OF RESPONSES + PIDS TO PLAYERS 
 	Packet p = ctop(*(drawn_card));
     p.header.type = PKT_VOTE;
     if(s_send(&p) == GAME_SUCCESS){
@@ -108,8 +106,6 @@ response initiate_vote() {
         printf("recorded votes and is now tallying the votes\n");
         for(int i = 0; i < PLR_COUNT; i++){
             for(int j = 0; j < PLR_COUNT; j++){
-                //TODO: JOSHUA MAKE SURE DATA ONLY COSNISTS OF A SINGLE INT
-                // PLAYER REPLIES WITH INDEX THAT CORRESPONDS TO PID OF THE RESPONSE, SEND BACK JUST THE PID TO INCREMENT VOTE COUNT
                 printf("found pid %d, with response vote as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));
                 if(drawn_card->responses[j]->player->p_id == strtol(pkttostr(&players[i].active), NULL, 10)){
                     drawn_card->responses[j]->player->round_votes++; 

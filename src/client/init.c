@@ -108,6 +108,8 @@ int main() {
 		
 		while (1) {
 			sleep(1);
+			// TODO: not actually here but i need to update teh game loop a bit better so that the client has a proper game loop;
+			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (c_read() == READ_SUCCESS && ready) {
 				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = pkttoc(&active);
