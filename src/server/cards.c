@@ -67,17 +67,17 @@ void free_card(Card* card) {
 
 	if (card->responses != NULL) {
 		for(int i = 0; i < LOBBY_SIZE; i++) {
-			if (card->responses[i]->player != NULL) {
-				free(card->responses[i]->player);		
-			}
-			if (card->responses[i]->response != NULL) {
-				free(card->responses[i]->response);
-			}
 			if (card->responses[i] != NULL) {
+				//if (card->responses[i]->player != NULL) {
+				//	free(card->responses[i]->player);		
+				//}
+				if (card->responses[i]->response != NULL) {
+					free(card->responses[i]->response);
+				}
 				free(card->responses[i]);
 			}
 		}
 	}
-    free(card->responses);
-    return;
+	free(card->responses);
+	return;
 }

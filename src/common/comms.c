@@ -34,7 +34,7 @@ response comms_read(int fd, void *buf, int *inbuf, int target) {
             return READ_PARTIAL;
         } 
 		if (errno == ECONNRESET || errno == ENOTCONN) {
-			return CLIENT_DISCONNECT;
+			return CLIENT_DISCONNECT; // note that these are expected to be client errors. if the SERVER disconnects however, WE ARE SCREWED.
 		}
 		return READ_FAIL;
     }

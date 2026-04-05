@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/select.h>
-
+#include <signal.h>
 
 int s_socket = -1;
 extern Packet active;
@@ -19,7 +19,25 @@ int PLR_COUNT = 0; // this just guarantees that both the client and server have 
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
 				   // TODO: disconnects
 
+// BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
+void sigintinator(int sig) {
+	printf("\nSIGINT caught. Imagine ragequitting. Removing you from server\n");
+	if (s_socket != -1) {
+		Packet p = strtopkt(PKT_QUIT, "i ragequit");
+		c_send(&p); // we dont even need to check this, because if this fails it doesnt even matter.
+					// server will just handle it as a disconnect.
+					// but this is funnier if it works.
+		free(p.data);
+		close(s_socket);
+	}
+	exit(0);
+}
+
+// BEHOLD, MY SIGINTINATORINATOR, IT SIGINTINATES THE SIGINTINATOR FOR SINGINTINATING THE SIGINTINATIONATORINATING
+void __attribute__((alias("sigintinator"))) sigintinatorinator(int sig);
+
 int main() {
+	signal(SIGINT, sigintinatorinator); // this is so stupid i dont think i got enough sleep last night.
 	if (init_display() != 0) {
 		fprintf(stderr, "Error while initializing display");
 		exit(1);
@@ -42,7 +60,10 @@ int main() {
 			
 			ready = 0;
 			while (!ready) {
-				c_read();
+				if (c_read() == CLIENT_DISCONNECT) {
+					printf("server killed you.\n");
+					exit(1);
+				}
 			}
 			int host = 0;
 			printf("%s\n", pkttostr(&active));
@@ -110,13 +131,19 @@ int main() {
 			printf("Error in sending join packet\n");
 			exit(1);
 		}
-		//Packet pst = stop(PKT_START, "orange");
 		
 		while (1) {
-			sleep(1);
+			//sleep(1); why are we even sleeping here? NOTE TO SELF, IF SOMETHING BREAKS WHEN I COMPILE IT IS PROBABLY
+			//CAUSED BY THIS SLEEP BEING COMMENTED OUT.
 			// TODO: not actually here but i need to update teh game loop a bit better so that the client has a proper game loop;
+			response ret = c_read();
+			if (ret == CLIENT_DISCONNECT) {
+				printf("Connection lost, server killed you or died\n");
+				close(s_socket);
+				exit(1);
+			}
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
-			if (c_read() == READ_SUCCESS && ready) {
+			if (ret == READ_SUCCESS && ready) {
 				//if (active.header.type == PKT_START) {
 				//	char* val = pkttostr(&active);
 				//	printf("%s\n", val);

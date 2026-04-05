@@ -107,6 +107,7 @@ void start_lobby(int listenfd) {
 						}
 					}
 				} else if (ret == CLIENT_DISCONNECT) {
+					printf("player %s disconnected from lobby.\n", players[i].name);
 					close(players[i].fd);
 					players[i].state = DISCONNECTED;
 					players[i].fd = -1;
@@ -114,10 +115,7 @@ void start_lobby(int listenfd) {
 					if (players[i].active.data) {
 						free(players[i].active.data);
 						players[i].active.data = NULL;
-						printf("Cleared data from disconnected player\n");
 					}
-					printf("Player disconnected\n");
-					// TODO: finish this
 				}
 			}
 		}

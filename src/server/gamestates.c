@@ -61,8 +61,15 @@ response await_responses() {
         for(int i = 0; i < PLR_COUNT; i++){
             for(int j = 0; j < PLR_COUNT; j++){
                 if(drawn_card->responses[j]->player->p_id == players[i].p_id){
-                    drawn_card->responses[j]->response = pkttostr(&(players[i].active));
-                    printf("await_responses: found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, drawn_card->responses[j]->response);
+
+					if (players[i].fd == -1) {
+						drawn_card->responses[j]->response = NULL;
+						printf("here disconnect player die %d %s\n", players[i].p_id, players[i].name);
+					} else if (players[i].ready) {
+						drawn_card->responses[j]->response = strdup(pkttostr(&(players[i].active)));
+						printf("await_responses: found pid %d, with response recorded as %s \n",drawn_card->responses[j]->player->p_id, drawn_card->responses[j]->response);
+						players[i].ready = 0;
+					}
                 }
                 
             }
@@ -78,6 +85,22 @@ response await_responses() {
 response end_round() {
     free_card(drawn_card);
     drawn_card = NULL;
+
+	for (int i = 0; i < LOBBY_SIZE; i++) {
+		if (players[i].state == READY && players[i].fd == -1) {
+			printf("this player disconnected midgame so die\n");
+			// TODO: free additional relevant data from them.
+			//
+			char leave_msg[40];
+			sprintf(leave_msg, "%d %s", players[i].p_id, players[i].name);
+			Packet leave_pkt = strtopkt(PKT_PLR_DC, leave_msg);
+			s_send(&leave_pkt);
+			free(leave_pkt.data);
+
+			players[i].state = DISCONNECTED;
+			PLR_COUNT--;
+		}
+	}
     return GAME_SUCCESS;
 }
 
@@ -110,8 +133,12 @@ response initiate_vote() {
     if(s_listen(10) == TIMEOUT){ // time limit to check for responses
         printf("recorded votes and is now tallying the votes\n");
         for(int i = 0; i < PLR_COUNT; i++){
+			if (players[i].fd == -1 || players[i].ready == 0) {
+				printf("no vote from %d\n", players[i].p_id);
+				continue;
+			}
+            printf("checking what player pid %d voted, they voted %d \n", players[i].p_id, (int)strtol(pkttostr(&players[i].active), NULL, 10));
             for(int j = 0; j < PLR_COUNT; j++){
-                printf("checking what player pid %d voted, they voted %d \n",players[i].p_id, (int)strtol(pkttostr(&players[i].active), NULL, 10));
                 // ASSUME THAT WHAT THE PLAYER SENDS BACK IS THE PID OF WHO IT VOTED 
                 if(drawn_card->responses[j]->player->p_id == strtol(pkttostr(&players[i].active), NULL, 10)){
                     printf("found pid %d, with response vote as %s \n",drawn_card->responses[j]->player->p_id, pkttostr(&(players[i].active)));

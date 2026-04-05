@@ -79,7 +79,7 @@ response s_read(Player *p) {
 		}
 		return ret;
 	}
-	return READ_FAIL;
+	return (ret == CLIENT_DISCONNECT) ? CLIENT_DISCONNECT : READ_FAIL;
 }
 
 // still does not have a true response
@@ -124,8 +124,18 @@ response s_listen(int max_time) {
 				
 				if (FD_ISSET(players[i].fd, &fds)) {
 					// not going to even touch reimplementing all that logic again.
-					if(s_read(&players[i])== READ_SUCCESS){
+					response ret = s_read(&players[i]);
+					if (ret == READ_SUCCESS) {
 						fd_count++;
+					} else if (ret == CLIENT_DISCONNECT) {
+						printf("Player %s disconnected, what a loser.\n", players[i].name);
+						close(players[i].fd);
+						players[i].fd = -1;
+
+						if (players[i].active.data) {
+							free(players[i].active.data);
+							players[i].active.data = NULL;
+						}
 					}
 				}
 

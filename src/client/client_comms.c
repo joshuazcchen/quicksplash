@@ -67,7 +67,8 @@ response c_read() {
 		}
 		return ret;
 	}
-	return READ_FAIL;
+
+	return ret == CLIENT_DISCONNECT ? CLIENT_DISCONNECT : READ_FAIL;
 }
 
 
