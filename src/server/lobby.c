@@ -12,6 +12,7 @@
 
 #define LOBBY_SIZE 5
 extern Player players[LOBBY_SIZE];
+int PLR_COUNT;
 
 void start_lobby(int listenfd) {
     fd_set fds;
@@ -32,7 +33,6 @@ void start_lobby(int listenfd) {
     }
 
     int started = 0;
-    int joined = 0;
 
     while (!started) {
         read_fds = fds;
@@ -77,19 +77,28 @@ void start_lobby(int listenfd) {
 							// swapped this to 31 instead of 32
                             players[i].name[31] = '\0';
 							//players[i].state = READY;
-							joined++;
+							PLR_COUNT++;
 							players[i].state = READY;
 							printf("%s joined properly\n", players[i].name);
+							Packet host_pkt;
+							printf("%d", players[i].p_id);
+							if (players[i].p_id == 1) {
+								host_pkt = strtopkt(PKT_JOIN, "YOU ARE HOST NOW CONGRATULATIONS");
+							} else {
+								host_pkt = strtopkt(PKT_JOIN, "Orange");
+							}
+							comms_send(players[i].fd, &host_pkt); // SCREW YOU I SHOULD MAKE A THING IN SERVERCOMMS FOR THIS BUT I AM NOT GOING TO BECAUSE IT IS ONE USE AND IT IS NEVER GOING TO BE USED AGAIN.
+																  // TODO: make a thing in servercomms which just does this.
+							free(host_pkt.data);
 						} 
 					} else if (pkt->header.type == PKT_START) {
-						printf("success!!!!!\n");
-						// at least for testing im giving my player the ability to start the game.
-						// // TODO TODO: ADD VERIFICATION THAT ITS THE ACTUAL DEDICATED HOST CLIENT
-						printf("success start game\n");
-						started = 1;
-						free(pkt->data);
-						pkt->data = NULL;
-						return;
+						if (players[i].p_id == 1) {
+							printf("game start\n");
+							started = 1;
+							free(pkt->data);
+							pkt->data = NULL;
+							return;
+						}
 					}
 					free(pkt->data);
 					pkt->data = NULL;
@@ -98,6 +107,7 @@ void start_lobby(int listenfd) {
 					close(players[i].fd);
 					players[i].state = DISCONNECTED;
 					players[i].fd = -1;
+					PLR_COUNT--;
 					if (players[i].active.data) {
 						free(players[i].active.data);
 						players[i].active.data = NULL;
@@ -109,5 +119,5 @@ void start_lobby(int listenfd) {
 			}
 		}
 	}
-//	printf("woohoo\n");
+	//	printf("woohoo\n");
 }

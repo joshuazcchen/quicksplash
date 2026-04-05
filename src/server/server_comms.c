@@ -11,6 +11,7 @@
 // TODO: swap this so its just an extern?
 #define LOBBY_SIZE 5
 extern Player players[LOBBY_SIZE];
+extern int PLR_COUNT;
 
 // sends a packet from the server to each of the clients.
 // it is imperative that the client does not edit this. i dont think itll actually break anything, but it is probably just best convention
@@ -129,7 +130,6 @@ response s_listen(int max_time) {
 
             }
         }
-		// TODO: JOSHUA KEEP TRACK OF NUMBERS OF PLAYER IN THE LOBBY PELASE BECEAUSE I ALSO NEED THIS THANKS
 		if(fd_count == 1){
 			
 			return TIMEOUT;
