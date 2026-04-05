@@ -86,8 +86,7 @@ void start_lobby(int listenfd) {
 							} else {
 								host_pkt = strtopkt(PKT_JOIN, "Orange");
 							}
-							comms_send(players[i].fd, &host_pkt); // SCREW YOU I SHOULD MAKE A THING IN SERVERCOMMS FOR THIS BUT I AM NOT GOING TO BECAUSE IT IS ONE USE AND IT IS NEVER GOING TO BE USED AGAIN.
-																  // TODO: make a thing in servercomms which just does this.
+							s_slide(players[i].fd, &host_pkt); 
 							free(host_pkt.data);
 						} 
 					} else if (pkt->header.type == PKT_START) {
@@ -119,5 +118,4 @@ void start_lobby(int listenfd) {
 			}
 		}
 	}
-	//	printf("woohoo\n");
 }

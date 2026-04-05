@@ -17,7 +17,6 @@ extern Packet active;
 extern int ready; 
 int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
-				   // TODO: disconnects
 
 // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
@@ -133,9 +132,6 @@ int main() {
 		}
 		
 		while (1) {
-			//sleep(1); why are we even sleeping here? NOTE TO SELF, IF SOMETHING BREAKS WHEN I COMPILE IT IS PROBABLY
-			//CAUSED BY THIS SLEEP BEING COMMENTED OUT.
-			// TODO: not actually here but i need to update teh game loop a bit better so that the client has a proper game loop;
 			response ret = c_read();
 			if (ret == CLIENT_DISCONNECT) {
 				printf("Connection lost, server killed you or died\n");
@@ -144,13 +140,6 @@ int main() {
 			}
 			// ALSO TODO: make sure that when vote is sent it is always just a single int
 			if (ret == READ_SUCCESS && ready) {
-				//if (active.header.type == PKT_START) {
-				//	char* val = pkttostr(&active);
-				//	printf("%s\n", val);
-				//	PLR_COUNT = strtol(val, NULL, 10); 
-				//	printf("received it here of plrcount of %d\n", PLR_COUNT);
-				//	continue;
-				//}
 				printf("received packet of %d %d from server\n", active.header.type, active.header.length);
 				Card rec = pkttoc(&active);
 				printf("\ncard got: %s\n", rec.prompt_text ? rec.prompt_text : "[no text]");
@@ -188,6 +177,9 @@ int main() {
 
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
+				} else if (active.header.type == PKT_GAME_END) {
+					printf("game over\n");
+					exit(0);
 				} else {
 					printf("\npacket type %d data: %s\n", active.header.type, rec.prompt_text ? rec.prompt_text : "");
 				}
@@ -206,7 +198,6 @@ int main() {
 								// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
 								free(rec.responses[i]->player); // clean up on the clientside
 							}
-							// fuck i forgot to free the response
 							free(rec.responses[i]);
 						}
 					}
