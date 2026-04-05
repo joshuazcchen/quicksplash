@@ -69,12 +69,13 @@ int main() {
 				if (select(max_fd + 1, &fds, NULL, NULL, NULL) > 0) {
 					if (FD_ISSET(STDIN_FILENO, &fds)) {
 						// honestly i dont care what the hell they send but if we want to later on we can just make it require them to send a specific start message. right now, this will just intercept if they say ANYTHING at all.
+						char c;
+						while ((c= getchar()) != '\n' && c != EOF);
 						if (!host) continue;
+
 						Packet pst = strtopkt(PKT_START, "orange");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("game started\n");
-							char c;
-							while ((c= getchar()) != '\n' && c != EOF);
 							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
