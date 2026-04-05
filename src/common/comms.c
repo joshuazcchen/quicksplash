@@ -20,7 +20,11 @@ response comms_read(int fd, void *buf, int *inbuf, int target) {
     if (room <= 0) {
         return READ_SUCCESS; // yooooo in this case it literally means a SUCCESS not a FAILURE anymore hahahahahaha
     }
-    int nbytes = recv(fd, (char*)buf + *inbuf, room, MSG_DONTWAIT);
+	int nbytes;
+	do {
+		nbytes = recv(fd, (char*)buf + *inbuf, room, MSG_DONTWAIT);
+	} while (nbytes < 0 && errno == EINTR);
+
     if (nbytes == 0) {
         return CLIENT_DISCONNECT; // if we dont receive anything, clients probably dead so lets treat them as dead
 								  // this is not different from the old versio njsut commenting in now so that its easier to
@@ -29,8 +33,10 @@ response comms_read(int fd, void *buf, int *inbuf, int target) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             return READ_PARTIAL;
         } 
-        return CLIENT_DISCONNECT; // same kind of error handling as before, at least on intiial passthrough these seem like it
-								  // would all still work?
+		if (errno == ECONNRESET || errno == ENOTCONN) {
+			return CLIENT_DISCONNECT;
+		}
+		return READ_FAIL;
     }
     *inbuf += nbytes;
     if (*inbuf == target) {
