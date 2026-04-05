@@ -10,7 +10,6 @@
 #include "protocol.h"
 #include <string.h>
 
-#define LOBBY_SIZE 5
 extern Player players[LOBBY_SIZE];
 int PLR_COUNT;
 

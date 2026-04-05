@@ -21,7 +21,7 @@ int PLR_COUNT = 0; // this just guarantees that both the client and server have 
 
 // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
-	printf("\nSIGINT caught. Imagine ragequitting. Removing you from server\n");
+	printf("\nSIGINT caught %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
 	if (s_socket != -1) {
 		Packet p = strtopkt(PKT_QUIT, "i ragequit");
 		c_send(&p); // we dont even need to check this, because if this fails it doesnt even matter.
@@ -193,6 +193,23 @@ int main() {
 				}
 
 				if (rec.prompt_text) free(rec.prompt_text);
+
+				// this is effectively the same code as in the free card, but basically just moved to here.
+				// frees responses attached to the card to clear out the 40byte memory leak
+				if (rec.responses != NULL) {
+					for (int i = 0; i < LOBBY_SIZE; i++) {
+						if (rec.responses[i] != NULL) {
+							if (rec.responses[i]->response != NULL) {
+								free(rec.responses[i]->response);
+							}
+							if (rec.responses[i]->player != NULL) {
+								// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+								free(rec.responses[i]->player); // clean up on the clientside
+							}
+						}
+					}
+				}
+
 				free(active.data);
 				active.data = NULL;
 				ready = 0;

@@ -37,7 +37,7 @@ response play_round() {
 response await_responses() {
     printf("await_responses: There are currently %d players \n",PLR_COUNT);
 
-    drawn_card->responses = malloc(sizeof(Response *)*PLR_COUNT);
+    drawn_card->responses = calloc(LOBBY_SIZE, sizeof(Response*));
     for(int i = 0; i < PLR_COUNT; i++){
 		if (players[i].fd > 2) {
 			drawn_card->responses[i] = malloc(sizeof(Response)); //allocate space to be filled later

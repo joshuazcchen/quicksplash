@@ -8,7 +8,6 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-#define LOBBY_SIZE 5
 extern Player players[LOBBY_SIZE];
 extern int PLR_COUNT;
 
