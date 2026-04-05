@@ -11,30 +11,7 @@ static void vote_print_line(char* pad, int width, const char* color, char* text)
 	justify_text_format(format, width, width, text);
 }
 
-static int text_len(char* value) {
-	if (!value) return 0;
-	return (int)strlen(value);
-}
 
-static void print_meter(char* pad, int width, int score, int max_score) {
-	char meter_line[256] = {0};
-	char meter_bar[48] = {0};
-	int bar_width = 18;
-	int fill = 0;
-
-	if (max_score <= 0) max_score = 1;
-	if (score < 0) score = 0;
-	if (score > max_score) score = max_score;
-
-	fill = (score * bar_width) / max_score;
-	for (int i = 0; i < bar_width; i++) {
-		meter_bar[i] = (i < fill) ? '=' : '.';
-	}
-	meter_bar[bar_width] = '\0';
-
-	snprintf(meter_line, sizeof(meter_line), "Appeal meter: [%s]", meter_bar);
-	vote_print_line(pad, width, "\033[38;5;245m", meter_line);
-}
 
 void ui_show_vote_card(Card card, int response_count) {
 	int total_width = terminal_width;
@@ -54,7 +31,6 @@ void ui_show_vote_card(Card card, int response_count) {
 	int inner_width = panel_width - 2;
 	int content_width = inner_width - 2;
 	char line[1024] = {0};
-	int best_len = 0;
 	int shown_count = 0;
 
 	clear_screen();
@@ -74,14 +50,6 @@ void ui_show_vote_card(Card card, int response_count) {
 	vote_print_line(start_pad, content_width, "\033[1;38;5;39m", "Responses:");
 	vote_print_line(start_pad, content_width, "\033[38;5;244m", "Type the response number and press Enter to cast your vote.");
 
-	for (int i = 0; i < response_count; i++) {
-		Response* response = card.responses ? card.responses[i] : NULL;
-		if (response && response->response) {
-			int current = text_len(response->response);
-			if (current > best_len) best_len = current;
-		}
-	}
-
 	if (!card.responses || response_count <= 0) {
 		vote_print_line(start_pad, content_width, "\033[38;5;203m", "No responses were included in this packet yet.");
 	} else {
@@ -89,7 +57,6 @@ void ui_show_vote_card(Card card, int response_count) {
 			Response* response = card.responses[i];
 			char* response_text = "[empty response]";
 			char* submitter = "Unknown";
-			int response_text_len = 0;
 
 			if (!response) {
 				continue;
@@ -97,7 +64,6 @@ void ui_show_vote_card(Card card, int response_count) {
 
 			if (response->response && strlen(response->response) > 0) response_text = response->response;
 			if (response->player && strlen(response->player->name) > 0) submitter = response->player->name;
-			response_text_len = text_len(response->response);
 
 			if (shown_count > 0) {
 				vote_print_line(start_pad, content_width, "\033[38;5;240m", "----------------------------------------");
@@ -107,7 +73,6 @@ void ui_show_vote_card(Card card, int response_count) {
 			vote_print_line(start_pad, content_width, "\033[1;38;5;51m", line);
 
 			vote_print_line(start_pad, content_width, "\033[38;5;255m", response_text);
-			print_meter(start_pad, content_width, response_text_len, best_len);
 			shown_count++;
 		}
 	}
