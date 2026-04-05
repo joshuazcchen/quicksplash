@@ -142,10 +142,14 @@ int main() {
 				if (active.header.type == PKT_CARD) {
 					Card rec = pkttoc(&active);
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
-					Packet reply = strtopkt(PKT_REPLY, prompt_response);
-					c_send(&reply);
-					free(prompt_response);
-					free(reply.data);
+					if (prompt_response != NULL) {
+						Packet reply = strtopkt(PKT_REPLY, prompt_response);
+						c_send(&reply);
+						free(prompt_response);
+						free(reply.data);
+					} else {
+						printf("client timeout\n");
+					}
 					if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 					// this is effectively the same code as in the free card, but basically just moved to here.
@@ -173,6 +177,10 @@ int main() {
 
 					while (1) {
 						get_str_to_ptr(vote_response, sizeof(vote_response));
+						if (strcmp(vote_response, "INT") == 0) {
+							index = -1;
+							break;
+						}
 						index = strtol(vote_response, NULL, 10) - 1;
 
 						if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
@@ -182,14 +190,16 @@ int main() {
 						printf("Invalid choice. Please enter a valid response number: ");
 					}
 
-					// get player id
-					int pid = rec.responses[index]->player->p_id;
-
-					char pid_str[12]; 
-					snprintf(pid_str, sizeof(pid_str), "%d", pid);
-					Packet vote = strtopkt(PKT_VOTE,pid_str);
-					c_send(&vote);
-					free(vote.data);
+					if (index != -1) {
+						int pid = rec.responses[index]->player->p_id;
+						char pid_str[12]; 
+						snprintf(pid_str, sizeof(pid_str), "%d", pid);
+						Packet vote = strtopkt(PKT_VOTE,pid_str);
+						c_send(&vote);
+						free(vote.data);
+					} else {
+						printf("client timeout\n");
+					}
 
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
@@ -218,25 +228,25 @@ int main() {
 					exit(0);
 				}
 
-	//			if (rec.prompt_text != NULL) free(rec.prompt_text);
+				//			if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 				// this is effectively the same code as in the free card, but basically just moved to here.
 				// frees responses attached to the card to clear out the 40byte memory leak
-	//			if (rec.responses != NULL) {
-	//				for (int i = 0; i < LOBBY_SIZE; i++) {
-	//					if (rec.responses[i] != NULL) {
-	//						if (rec.responses[i]->response != NULL) {
-	//							free(rec.responses[i]->response);
-	//						}
-	//						if (rec.responses[i]->player != NULL) {
-	//							// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
-	//							free(rec.responses[i]->player); // clean up on the clientside
-	//						}
-	//						free(rec.responses[i]);
-	//					}
-	//				}
-	//				free(rec.responses);
-	//			}
+				//			if (rec.responses != NULL) {
+				//				for (int i = 0; i < LOBBY_SIZE; i++) {
+				//					if (rec.responses[i] != NULL) {
+				//						if (rec.responses[i]->response != NULL) {
+				//							free(rec.responses[i]->response);
+				//						}
+				//						if (rec.responses[i]->player != NULL) {
+				//							// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+				//							free(rec.responses[i]->player); // clean up on the clientside
+				//						}
+				//						free(rec.responses[i]);
+				//					}
+				//				}
+				//				free(rec.responses);
+				//			}
 
 				free(active.data);
 				active.data = NULL;

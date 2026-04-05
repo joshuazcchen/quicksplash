@@ -64,8 +64,14 @@ response await_responses() {
 						drawn_card->responses[j]->response = NULL;
                         printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Player PID %d named %s has disconnected or never replied.\n", players[i].p_id, players[i].name);
 					} else if (players[i].ready) {
-						drawn_card->responses[j]->response = strdup(pkttostr(&(players[i].active)));
-                        printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Stored response %s for player PID %d in Response array.\n", drawn_card->responses[j]->response,drawn_card->responses[j]->player->p_id);
+						char* p = pkttostr(&(players[i].active));
+						if (p != NULL) {
+							drawn_card->responses[j]->response = strdup(pkttostr(&(players[i].active)));
+							printf("\033[1;35m[ SERVER ]\033[0m\033[1;94m gamestates.c:\033[0m Stored response %s for player PID %d in Response array.\n", drawn_card->responses[j]->response,drawn_card->responses[j]->player->p_id);
+						} else {
+
+							printf("\033[1;35m[ SERVER ]\033[0m\033[1;31m gamestates.c:\033[0m No response received for player PID %d in Response array.\n", drawn_card->responses[j]->player->p_id);
+						}
 						players[i].ready = 0;
                         free(players[i].active.data);
 					}
