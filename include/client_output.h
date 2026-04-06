@@ -13,6 +13,7 @@ void center_text_display(char* text);
 void show_card_prompt(Card card);
 char* get_card_prompt_response(Card card, int max_chars);
 void show_vote_card(Card card, int response_count);
+void show_results_card(Card card);
 int init_display();
 void clear_screen();
 void server_select(char* name, char* port, char* addr);

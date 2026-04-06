@@ -16,7 +16,10 @@ response player_leave();
 response initiate_vote();
 response game_loop();
 response determine_round_winner();
+response send_round_results();
+response wait_for_host_next_round();
 response determine_game_winner();
+response send_game_results();
 
 #endif
 

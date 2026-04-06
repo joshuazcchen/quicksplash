@@ -114,6 +114,10 @@ void show_vote_card(Card card, int response_count) {
 	ui_show_vote_card(card, response_count);
 }
 
+void show_results_card(Card card) {
+	ui_show_results_card(card);
+}
+
 int init_display() {
 	signal(SIGWINCH, update_size); // automatically update terminal_width when terminal is resized
 	

@@ -43,6 +43,10 @@ int main() {
          printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Selected a winner.\n");
     }
 
+    if(send_game_results() == GAME_SUCCESS){
+        printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Sent game results to clients.\n");
+    }
+
     if (wrap_up_game() == GAME_SUCCESS){
         printf("\033[1;35m[ SERVER ]\033[0m \033[1;32minit.c:\033[0m Game finished, beginning cleanup processes.\n");
     }

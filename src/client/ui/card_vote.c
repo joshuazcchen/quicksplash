@@ -5,8 +5,7 @@
 #include "client_ui_common.h"
 
 
-
-void ui_show_vote_card(Card card, int response_count) {
+static void ui_show_results_board(Card card, int response_count, const char* heading, const char* footer) {
 	int total_width = terminal_width;
 	if (total_width <= 0) total_width = 80;
 
@@ -32,7 +31,7 @@ void ui_show_vote_card(Card card, int response_count) {
 	display_n_times("─", inner_width);
 	printf("╮\033[0m\n");
 
-	ui_print_line_color(start_pad, content_width, "\033[1;38;5;45m", "VOTE RESULTS BOARD");
+	ui_print_line_color(start_pad, content_width, "\033[1;38;5;45m", (char*)heading);
 	ui_print_line_color(start_pad, content_width, "\033[38;5;252m", "Prompt:");
 	ui_print_line_color(start_pad, content_width, "\033[1;38;5;230m", card.prompt_text ? card.prompt_text : "[missing prompt]");
 
@@ -41,7 +40,7 @@ void ui_show_vote_card(Card card, int response_count) {
 	printf("┤\033[0m\n");
 
 	ui_print_line_color(start_pad, content_width, "\033[1;38;5;39m", "Responses:");
-	ui_print_line_color(start_pad, content_width, "\033[38;5;244m", "Type the response number and press Enter to cast your vote.");
+	ui_print_line_color(start_pad, content_width, "\033[38;5;244m", (char*)footer);
 
 	if (!card.responses || response_count <= 0) {
 		ui_print_line_color(start_pad, content_width, "\033[38;5;203m", "No responses were included in this packet yet.");
@@ -71,16 +70,48 @@ void ui_show_vote_card(Card card, int response_count) {
 	}
 
 	if (shown_count == 0) {
-		ui_print_line_color(start_pad, content_width, "\033[38;5;203m", "No active responses available to vote on.");
+		ui_print_line_color(start_pad, content_width, "\033[38;5;203m", "No active responses available to display.");
 	}
 
 	printf("%s\033[38;5;45m╰", start_pad);
 	display_n_times("─", inner_width);
 	printf("╯\033[0m\n\n");
+	fflush(stdout);
+}
+
+void ui_show_vote_card(Card card, int response_count) {
+	ui_show_results_board(card, response_count, "VOTING BOARD", "Type the response number and press Enter to cast your vote.");
+
+	int total_width = terminal_width;
+	if (total_width <= 0) total_width = 80;
+
+	int panel_width = (total_width >= 90) ? 86 : total_width - 2;
+	if (panel_width < 44) panel_width = 44;
+	if (panel_width > total_width) panel_width = total_width;
+
+	int left_pad = (total_width - panel_width) / 2;
+	if (left_pad < 0) left_pad = 0;
+
+	char start_pad[left_pad + 1];
+	memset(start_pad, ' ', left_pad);
+	start_pad[left_pad] = '\0';
 
 	if (response_count > 0) {
 		printf("%s\033[1;38;5;118mEnter choice [1-%d]: \033[0m", start_pad, response_count);
 	} else {
 		printf("%s\033[1;38;5;203mEnter choice: \033[0m", start_pad);
-		}
+	}
+	fflush(stdout);
+}
+
+void ui_show_results_card(Card card) {
+	const char* heading = "ROUND RESULTS";
+	const char* footer = "Vote results for the previous round.";
+
+	if (card.prompt_text != NULL && strcmp(card.prompt_text, "FINAL GAME RESULTS") == 0) {
+		heading = "FINAL GAME RESULTS";
+		footer = "Final standings for the match.";
+	}
+
+	ui_show_results_board(card, LOBBY_SIZE, heading, footer);
 }

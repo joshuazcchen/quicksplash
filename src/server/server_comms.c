@@ -46,7 +46,7 @@ response s_read(Player *p) {
 			if (p->active.header.length > 0) {
 				p->active.data = malloc(p->active.header.length);
 				if (!p->active.data) {
-					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Server side fatal error in malloc, likely out of memory, printing error log and terminating:\n\t");
+					fprintf(stderr, "\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Server side fatal error in malloc, likely out of memory, printing error log and terminating:\n\t");
 					perror("malloc");
 					exit(1); // server should never actually exit but if something breaks in the malloc then we break. 
 							 // this just prevents a segfault later because theres no way around it later on.
@@ -84,11 +84,28 @@ response s_read(Player *p) {
 // still does not have a true response
 response s_listen(int max_time) {
     time_t start = time(NULL);
-	int fd_count = 0;
+	int pending[LOBBY_SIZE]; // keep track of players who haven't disconnected but also haven't send a response yet
+	int pending_count = 0;
+	for (int i = 0; i < LOBBY_SIZE; i++) {
+		pending[i] = 0;
+		if (players[i].fd > 2) {
+			pending[i] = 1;
+			pending_count++;
+		}
+	}
+
+	if (pending_count == 0) { // timeout if no players are connected
+		return TIMEOUT;
+	}
+
     // repeat for max_time time until time out or everyone has answered.
     // in case of client disconnect, you will just have to wait out the max_time.
     // however we could probably make that work better by using signals or smth?
 	while (1) {
+		if (pending_count == 0) {
+			return TIMEOUT;
+		}
+
         int t = time(NULL) - start;
         if (t >= max_time) {
             return TIMEOUT;
@@ -103,13 +120,17 @@ response s_listen(int max_time) {
         int high = 0;
 
         for (int i = 0; i < LOBBY_SIZE; i++) {
-            if (players[i].fd > 2) {
+			if (pending[i] && players[i].fd > 2) { // only listen to players who are pending and also not disconnected
                 FD_SET(players[i].fd, &fds);
                 if (players[i].fd > high) {
                     high = players[i].fd;
                 }
             }
         }
+
+		if (high == 0) { // rare case of no file descriptors to listen to
+			return TIMEOUT;
+		}
 
         // set up the struct that will be used to time out if max_time has passed
         struct timeval tl; // apparently this is considered synchronous which means i need it for the select multiplexing for the timeout.
@@ -121,15 +142,18 @@ response s_listen(int max_time) {
             for (int i = 0; i < LOBBY_SIZE; i++) {
                 // try to read from each player, if it reads properly then great, this was the player we wanted to listen to, otherwise, keep goin'.
 				
-				if (FD_ISSET(players[i].fd, &fds)) {
+				if (pending[i] && players[i].fd > 2 && FD_ISSET(players[i].fd, &fds)) {
 					// not going to even touch reimplementing all that logic again.
 					response ret = s_read(&players[i]);
 					if (ret == READ_SUCCESS) {
-						fd_count++;
+						pending[i] = 0;
+						pending_count--;
 					} else if (ret == CLIENT_DISCONNECT) {
 						printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Received disconnect signal as response from \033[1;33m%s\033[0m. Disconnecting user.\n", players[i].name);
 						close(players[i].fd);
 						players[i].fd = -1;
+						pending[i] = 0;
+						pending_count--;
 
 						if (players[i].active.data) {
 							free(players[i].active.data);
@@ -140,9 +164,6 @@ response s_listen(int max_time) {
 
             }
         }
-		if(fd_count == PLR_COUNT){
-			return TIMEOUT;
-		}
     }
 }
 

@@ -46,6 +46,7 @@ int main() {
 	char name[32] = {0};  // remove valgrind issues with calling strlen() on empty/uninitialized strings
 	char port[7] = {0};
 	char s_address[30] = {0};
+	int host = 0;
 
 	server_select(name, port, s_address);
 	int s_port = strtol(port, NULL, 10);
@@ -64,7 +65,6 @@ int main() {
 					exit(1);
 				}
 			}
-			int host = 0;
 			if (strcmp(pkttostr(&active), "YOU ARE HOST NOW CONGRATULATIONS") == 0) {
 				host = 1;
 				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now the \033[1;33mHost\033[0m.\n\t\033[1;37mPress any key to start the game.\033[0m\n");
@@ -99,7 +99,6 @@ int main() {
 						printf("\033[1;36m[ CLIENT ]\033[0m \032[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet. Starting game.\n");
-							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
 						break;
@@ -169,6 +168,37 @@ int main() {
 						}
 						free(rec.responses);
 					}
+				} else if (active.header.type == PKT_STATS) {
+					Card rec = pkttoc(&active);
+					show_results_card(rec);
+					int is_final_results = (rec.prompt_text != NULL && strcmp(rec.prompt_text, "FINAL GAME RESULTS") == 0);
+
+					if (!is_final_results && host) {
+						printf("\033[1;38;5;118mPress Enter to start the next round...\033[0m\n");
+						fflush(stdout);
+						int c;
+						while ((c = getchar()) != '\n' && c != EOF) {
+						}
+						Packet next_round = strtopkt(PKT_START, "next round");
+						c_send(&next_round);
+						free(next_round.data);
+					}
+
+					if (rec.prompt_text != NULL) free(rec.prompt_text);
+					if (rec.responses != NULL) {
+						for (int i = 0; i < LOBBY_SIZE; i++) {
+							if (rec.responses[i] != NULL) {
+								if (rec.responses[i]->response != NULL) {
+									free(rec.responses[i]->response);
+								}
+								if (rec.responses[i]->player != NULL) {
+									free(rec.responses[i]->player);
+								}
+								free(rec.responses[i]);
+							}
+						}
+						free(rec.responses);
+					}
 				} else if (active.header.type == PKT_VOTE) {
 					Card rec = pkttoc(&active);
 					show_vote_card(rec, LOBBY_SIZE);
@@ -181,13 +211,14 @@ int main() {
 							index = -1;
 							break;
 						}
-						index = strtol(vote_response, NULL, 10) - 1;
+						index = strtol(vote_response, NULL, 10) - 1; // players 1-5 converted to 0-4
 
 						if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
 							break;
 						}
 
 						printf("Invalid choice. Please enter a valid response number: ");
+						fflush(stdout);
 					}
 
 					if (index != -1) {
