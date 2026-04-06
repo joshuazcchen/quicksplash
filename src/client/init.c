@@ -11,25 +11,42 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <signal.h>
+#include <errno.h>
 
 int s_socket = -1;
 extern Packet active;
 extern int ready; 
 int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
+volatile sig_atomic_t should_exit = 0;
+
+static void disconnect_and_exit(int code) {
+	if (s_socket != -1) {
+		Packet p = strtopkt(PKT_QUIT, "i ragequit");
+		c_send(&p);
+		free(p.data);
+		close(s_socket);
+		s_socket = -1;
+	}
+	exit(code);
+}
+
+static void handle_round_results(int host) {
+	show_vote_results(pkttostr(&active));
+	if (host) {
+		printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
+		char wait_buf[8];
+		get_str_to_ptr(wait_buf, sizeof(wait_buf));
+		Packet cont = strtopkt(PKT_START, "continue");
+		c_send(&cont);
+		free(cont.data);
+	}
+}
 
 				   // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
-	printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received, exiting with code %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
-	if (s_socket != -1) {
-		Packet p = strtopkt(PKT_QUIT, "i ragequit");
-		c_send(&p); // we dont even need to check this, because if this fails it doesnt even matter.
-					// server will just handle it as a disconnect.
-					// but this is funnier if it works.
-		free(p.data);
-		close(s_socket);
-	}
-	exit(0);
+	(void)sig;
+	should_exit = 1;
 }
 
 // BEHOLD, MY SIGINTINATORINATOR, IT SIGINTINATES THE SIGINTINATOR FOR SINGINTINATING THE SIGINTINATIONATORINATING
@@ -60,6 +77,10 @@ int main() {
 
 			ready = 0;
 			while (!ready) {
+				if (should_exit) {
+					printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
+					disconnect_and_exit(0);
+				}
 				if (c_read() == CLIENT_DISCONNECT) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Connection dropped.\n");
 					exit(1);
@@ -88,7 +109,21 @@ int main() {
 				// stupidly c doesnt have a max function
 				int max_fd = (s_socket > STDIN_FILENO) ? s_socket : STDIN_FILENO;
 
-				if (select(max_fd + 1, &fds, NULL, NULL, NULL) > 0) {
+				int selected = select(max_fd + 1, &fds, NULL, NULL, NULL);
+				if (selected < 0) {
+					if (errno == EINTR) {
+						if (should_exit) {
+							printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
+							disconnect_and_exit(0);
+						}
+						continue;
+					}
+					perror("select");
+					close(s_socket);
+					exit(1);
+				}
+
+				if (selected > 0) {
 					if (FD_ISSET(STDIN_FILENO, &fds)) {
 						// honestly i dont care what the hell they send but if we want to later on we can just make it require them to send a specific start message. right now, this will just intercept if they say ANYTHING at all.
 						char c;
@@ -96,7 +131,7 @@ int main() {
 						if (!host) continue;
 
 						Packet pst = strtopkt(PKT_START, "orange");
-						printf("\033[1;36m[ CLIENT ]\033[0m \032[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
+						printf("\033[1;36m[ CLIENT ]\033[0m \033[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet. Starting game.\n");
 						}
@@ -130,6 +165,10 @@ int main() {
 		}
 
 		while (1) {
+			if (should_exit) {
+				printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
+				disconnect_and_exit(0);
+			}
 			response ret = c_read();
 			if (ret == CLIENT_DISCONNECT) {
 				printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Connection dropped.\n");
@@ -141,10 +180,14 @@ int main() {
 				if (active.header.type == PKT_CARD) {
 					Card rec = pkttoc(&active);
 					char *prompt_response = get_card_prompt_response(rec, MAX_RESPONSE_SIZE - 1);
-					Packet reply = strtopkt(PKT_REPLY, prompt_response);
-					c_send(&reply);
-					free(prompt_response);
-					free(reply.data);
+					if (prompt_response != NULL) {
+						Packet reply = strtopkt(PKT_REPLY, prompt_response);
+						c_send(&reply);
+						free(prompt_response);
+						free(reply.data);
+					} else {
+						printf("client timeout\n");
+					}
 					if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 					// this is effectively the same code as in the free card, but basically just moved to here.
@@ -178,7 +221,20 @@ int main() {
 						FD_SET(s_socket, &vote_fds); // listen for incoming packets
 
 						int max_fd = (s_socket > STDIN_FILENO) ? s_socket : STDIN_FILENO; // either the socket or the stdin, whichever is higher, for select
-						if (select(max_fd + 1, &vote_fds, NULL, NULL, NULL) <= 0) { // wait until either user input or a packet is received
+						int vote_selected = select(max_fd + 1, &vote_fds, NULL, NULL, NULL);
+						if (vote_selected < 0) {
+							if (errno == EINTR) {
+								if (should_exit) {
+									printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
+									disconnect_and_exit(0);
+								}
+								continue;
+							}
+							perror("select");
+							close(s_socket);
+							exit(1);
+						}
+						if (vote_selected == 0) {
 							continue;
 						}
 
@@ -192,15 +248,7 @@ int main() {
 
 							if (socket_ret == READ_SUCCESS && ready) { // if we got a packet and its ready to be processed
 								if (active.header.type == PKT_STATS) { // vote results!!!
-									show_vote_results(pkttostr(&active)); // show them!!!
-									if (host) {
-										printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
-										char wait_buf[8];
-										get_str_to_ptr(wait_buf, sizeof(wait_buf));
-										Packet cont = strtopkt(PKT_START, "continue");
-										c_send(&cont);
-										free(cont.data);
-									}
+									handle_round_results(host);
 									vote_state = -1; // we can break out of the loop now because we got the results packet, we dont need to listen for user input anymore
 								} else if (active.header.type == PKT_GAME_END) { // uh, game ended :(
 									printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
@@ -254,40 +302,32 @@ int main() {
 						free(rec.responses);
 					}
 				} else if (active.header.type == PKT_STATS) {
-						show_vote_results(pkttostr(&active));
-						if (host) {
-							printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
-							char wait_buf[8];
-							get_str_to_ptr(wait_buf, sizeof(wait_buf));
-							Packet cont = strtopkt(PKT_START, "continue");
-							c_send(&cont);
-							free(cont.data);
-						}
+						handle_round_results(host);
 				} else if (active.header.type == PKT_GAME_END) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
 					if (active.data != NULL) free(active.data);
 					exit(0);
 				}
 
-	//			if (rec.prompt_text != NULL) free(rec.prompt_text);
+				//			if (rec.prompt_text != NULL) free(rec.prompt_text);
 
 				// this is effectively the same code as in the free card, but basically just moved to here.
 				// frees responses attached to the card to clear out the 40byte memory leak
-	//			if (rec.responses != NULL) {
-	//				for (int i = 0; i < LOBBY_SIZE; i++) {
-	//					if (rec.responses[i] != NULL) {
-	//						if (rec.responses[i]->response != NULL) {
-	//							free(rec.responses[i]->response);
-	//						}
-	//						if (rec.responses[i]->player != NULL) {
-	//							// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
-	//							free(rec.responses[i]->player); // clean up on the clientside
-	//						}
-	//						free(rec.responses[i]);
-	//					}
-	//				}
-	//				free(rec.responses);
-	//			}
+				//			if (rec.responses != NULL) {
+				//				for (int i = 0; i < LOBBY_SIZE; i++) {
+				//					if (rec.responses[i] != NULL) {
+				//						if (rec.responses[i]->response != NULL) {
+				//							free(rec.responses[i]->response);
+				//						}
+				//						if (rec.responses[i]->player != NULL) {
+				//							// we can clear players here because we dont rlly care, at this point if they need the players prompts again they can get it from the server.
+				//							free(rec.responses[i]->player); // clean up on the clientside
+				//						}
+				//						free(rec.responses[i]);
+				//					}
+				//				}
+				//				free(rec.responses);
+				//			}
 
 				free(active.data);
 				active.data = NULL;

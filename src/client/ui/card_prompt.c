@@ -55,6 +55,10 @@ char* ui_collect_card_response(Card card, int max_chars) {
 		memset(input_buf, 0, sizeof(input_buf));
 		get_str_to_ptr(input_buf, sizeof(input_buf));
 
+		if (strcmp(input_buf, "INT") == 0) {
+			return NULL;
+		}
+
 		if (strlen(input_buf) == 0) {
 			printf("\033[0;31mPlease enter at least one character.\033[0m\n\n");
 			continue;
