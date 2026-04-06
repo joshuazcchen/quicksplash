@@ -46,6 +46,7 @@ int main() {
 	char name[32] = {0};  // remove valgrind issues with calling strlen() on empty/uninitialized strings
 	char port[7] = {0};
 	char s_address[30] = {0};
+	int host = 0; // had to move host variable to this scope instead for the rest to work properly
 
 	server_select(name, port, s_address);
 	int s_port = strtol(port, NULL, 10);
@@ -64,7 +65,6 @@ int main() {
 					exit(1);
 				}
 			}
-			int host = 0;
 			if (strcmp(pkttostr(&active), "YOU ARE HOST NOW CONGRATULATIONS") == 0) {
 				host = 1;
 				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now the \033[1;33mHost\033[0m.\n\t\033[1;37mPress any key to start the game.\033[0m\n");
@@ -99,7 +99,6 @@ int main() {
 						printf("\033[1;36m[ CLIENT ]\033[0m \032[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet. Starting game.\n");
-							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
 						break;
@@ -170,26 +169,68 @@ int main() {
 					show_vote_card(rec, LOBBY_SIZE);
 					char vote_response[8];
 					int index = -1;
+					int vote_state = 0; // 0 = waiting, 1 = sent, -1 = results packet arrived
 
-					while (1) {
-						get_str_to_ptr(vote_response, sizeof(vote_response));
-						index = strtol(vote_response, NULL, 10) - 1;
+					while (vote_state == 0) { // to not block on user input, we can loop and use file descriptors and select with packet listening
+						fd_set vote_fds;
+						FD_ZERO(&vote_fds); // we need to reset the vote file descriptors first
+						FD_SET(STDIN_FILENO, &vote_fds); // listen for user input to select a vote
+						FD_SET(s_socket, &vote_fds); // listen for incoming packets
 
-						if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
+						int max_fd = (s_socket > STDIN_FILENO) ? s_socket : STDIN_FILENO; // either the socket or the stdin, whichever is higher, for select
+						if (select(max_fd + 1, &vote_fds, NULL, NULL, NULL) <= 0) { // wait until either user input or a packet is received
+							continue;
+						}
+
+						if (FD_ISSET(s_socket, &vote_fds)) { // if we receive a packet but still waiting for user input
+							response socket_ret = c_read(); // process it
+							if (socket_ret == CLIENT_DISCONNECT) { // timeout? could be any other disconnect tho
+								printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Connection dropped.\n");
+								close(s_socket); // we should now close it LMFAO
+								exit(1);
+							}
+
+							if (socket_ret == READ_SUCCESS && ready) { // if we got a packet and its ready to be processed
+								if (active.header.type == PKT_STATS) { // vote results!!!
+									show_vote_results(pkttostr(&active)); // show them!!!
+									if (host) {
+										printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
+										char wait_buf[8];
+										get_str_to_ptr(wait_buf, sizeof(wait_buf));
+										Packet cont = strtopkt(PKT_START, "continue");
+										c_send(&cont);
+										free(cont.data);
+									}
+									vote_state = -1; // we can break out of the loop now because we got the results packet, we dont need to listen for user input anymore
+								} else if (active.header.type == PKT_GAME_END) { // uh, game ended :(
+									printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
+									if (active.data != NULL) free(active.data); // let's not forget to do that lol (memory leaks)
+									exit(0);
+								}
+							}
+						}
+
+						if (vote_state != 0) {
 							break;
 						}
 
-						printf("Invalid choice. Please enter a valid response number: ");
+						if (FD_ISSET(STDIN_FILENO, &vote_fds)) { // if user input is received and we are still waiting for vote results to come
+							get_str_to_ptr(vote_response, sizeof(vote_response)); // process user input
+							index = strtol(vote_response, NULL, 10) - 1; // convert to index (user will input 1-5, we need 0-4)
+
+							if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
+								int pid = rec.responses[index]->player->p_id;
+								char pid_str[12];
+								snprintf(pid_str, sizeof(pid_str), "%d", pid);
+								Packet vote = strtopkt(PKT_VOTE,pid_str);
+								c_send(&vote);
+								free(vote.data);
+								vote_state = 1;
+							} else {
+								printf("Invalid choice. Please enter a valid response number: ");
+							}
+						}
 					}
-
-					// get player id
-					int pid = rec.responses[index]->player->p_id;
-
-					char pid_str[12]; 
-					snprintf(pid_str, sizeof(pid_str), "%d", pid);
-					Packet vote = strtopkt(PKT_VOTE,pid_str);
-					c_send(&vote);
-					free(vote.data);
 
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
 					// for example rec.responses[i]->player->p_id represenrts first entry in vote, player selects 1 then send back rec.responses[i]->player->p_id to server
@@ -212,6 +253,16 @@ int main() {
 						}
 						free(rec.responses);
 					}
+				} else if (active.header.type == PKT_STATS) {
+						show_vote_results(pkttostr(&active));
+						if (host) {
+							printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
+							char wait_buf[8];
+							get_str_to_ptr(wait_buf, sizeof(wait_buf));
+							Packet cont = strtopkt(PKT_START, "continue");
+							c_send(&cont);
+							free(cont.data);
+						}
 				} else if (active.header.type == PKT_GAME_END) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
 					if (active.data != NULL) free(active.data);
