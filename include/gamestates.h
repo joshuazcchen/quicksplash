@@ -16,8 +16,6 @@ response player_leave();
 response initiate_vote();
 response game_loop();
 response determine_round_winner();
-response send_round_vote_results();
-response wait_for_host_continue();
 response determine_game_winner();
 
 #endif

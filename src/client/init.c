@@ -11,42 +11,25 @@
 #include <unistd.h>
 #include <sys/select.h>
 #include <signal.h>
-#include <errno.h>
 
 int s_socket = -1;
 extern Packet active;
 extern int ready; 
 int PLR_COUNT = 0; // this just guarantees that both the client and server have the same value and can be used in the same comms functions. maybe not the best structure but at this point just needs to work.
 				   // Will be synced on join and we will make a disconnect also send a message to the client as necessary.
-volatile sig_atomic_t should_exit = 0;
-
-static void disconnect_and_exit(int code) {
-	if (s_socket != -1) {
-		Packet p = strtopkt(PKT_QUIT, "i ragequit");
-		c_send(&p);
-		free(p.data);
-		close(s_socket);
-		s_socket = -1;
-	}
-	exit(code);
-}
-
-static void handle_round_results(int host) {
-	show_vote_results(pkttostr(&active));
-	if (host) {
-		printf("\n\033[1;33mPress Enter to continue to the next round...\033[0m");
-		char wait_buf[8];
-		get_str_to_ptr(wait_buf, sizeof(wait_buf));
-		Packet cont = strtopkt(PKT_START, "continue");
-		c_send(&cont);
-		free(cont.data);
-	}
-}
 
 				   // BEHOLD, MY SIGINTINATOR, WITH THIS DEVICE, EVERY SIGINT SHALL BE HANDLED! Unless you disconnect without a sigint like your internet dies or something.
 void sigintinator(int sig) {
-	(void)sig;
-	should_exit = 1;
+	printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received, exiting with code %d. Imagine ragequitting. Removing you from server\n", sig); // makefile is annoying me with the "unused variable!!!" so its here now.
+	if (s_socket != -1) {
+		Packet p = strtopkt(PKT_QUIT, "i ragequit");
+		c_send(&p); // we dont even need to check this, because if this fails it doesnt even matter.
+					// server will just handle it as a disconnect.
+					// but this is funnier if it works.
+		free(p.data);
+		close(s_socket);
+	}
+	exit(0);
 }
 
 // BEHOLD, MY SIGINTINATORINATOR, IT SIGINTINATES THE SIGINTINATOR FOR SINGINTINATING THE SIGINTINATIONATORINATING
@@ -63,7 +46,6 @@ int main() {
 	char name[32] = {0};  // remove valgrind issues with calling strlen() on empty/uninitialized strings
 	char port[7] = {0};
 	char s_address[30] = {0};
-	int host = 0; // had to move host variable to this scope instead for the rest to work properly
 
 	server_select(name, port, s_address);
 	int s_port = strtol(port, NULL, 10);
@@ -77,15 +59,12 @@ int main() {
 
 			ready = 0;
 			while (!ready) {
-				if (should_exit) {
-					printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
-					disconnect_and_exit(0);
-				}
 				if (c_read() == CLIENT_DISCONNECT) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;31mserver_comms.c:\033[0m Connection dropped.\n");
 					exit(1);
 				}
 			}
+			int host = 0;
 			if (strcmp(pkttostr(&active), "YOU ARE HOST NOW CONGRATULATIONS") == 0) {
 				host = 1;
 				printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m You are now the \033[1;33mHost\033[0m.\n\t\033[1;37mPress any key to start the game.\033[0m\n");
@@ -109,21 +88,7 @@ int main() {
 				// stupidly c doesnt have a max function
 				int max_fd = (s_socket > STDIN_FILENO) ? s_socket : STDIN_FILENO;
 
-				int selected = select(max_fd + 1, &fds, NULL, NULL, NULL);
-				if (selected < 0) {
-					if (errno == EINTR) {
-						if (should_exit) {
-							printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
-							disconnect_and_exit(0);
-						}
-						continue;
-					}
-					perror("select");
-					close(s_socket);
-					exit(1);
-				}
-
-				if (selected > 0) {
+				if (select(max_fd + 1, &fds, NULL, NULL, NULL) > 0) {
 					if (FD_ISSET(STDIN_FILENO, &fds)) {
 						// honestly i dont care what the hell they send but if we want to later on we can just make it require them to send a specific start message. right now, this will just intercept if they say ANYTHING at all.
 						char c;
@@ -131,9 +96,10 @@ int main() {
 						if (!host) continue;
 
 						Packet pst = strtopkt(PKT_START, "orange");
-						printf("\033[1;36m[ CLIENT ]\033[0m \033[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
+						printf("\033[1;36m[ CLIENT ]\033[0m \032[1;33minit.c:\033[0m You have sent the start packet to the \033[1;35mServer\033[0m.\n");
 						if (c_send(&pst) == SEND_SUCCESS) {
 							printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mlobby.c:\033[0m Received start packet. Starting game.\n");
+							host = 0; // we dont need a host anymore.
 						}
 						free(pst.data);
 						break;
@@ -165,10 +131,6 @@ int main() {
 		}
 
 		while (1) {
-			if (should_exit) {
-				printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
-				disconnect_and_exit(0);
-			}
 			response ret = c_read();
 			if (ret == CLIENT_DISCONNECT) {
 				printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Connection dropped.\n");
@@ -212,72 +174,31 @@ int main() {
 					show_vote_card(rec, LOBBY_SIZE);
 					char vote_response[8];
 					int index = -1;
-					int vote_state = 0; // 0 = waiting, 1 = sent, -1 = results packet arrived
 
-					while (vote_state == 0) { // to not block on user input, we can loop and use file descriptors and select with packet listening
-						fd_set vote_fds;
-						FD_ZERO(&vote_fds); // we need to reset the vote file descriptors first
-						FD_SET(STDIN_FILENO, &vote_fds); // listen for user input to select a vote
-						FD_SET(s_socket, &vote_fds); // listen for incoming packets
-
-						int max_fd = (s_socket > STDIN_FILENO) ? s_socket : STDIN_FILENO; // either the socket or the stdin, whichever is higher, for select
-						int vote_selected = select(max_fd + 1, &vote_fds, NULL, NULL, NULL);
-						if (vote_selected < 0) {
-							if (errno == EINTR) {
-								if (should_exit) {
-									printf("\n\n\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m SIGINT received. Exiting cleanly.\n");
-									disconnect_and_exit(0);
-								}
-								continue;
-							}
-							perror("select");
-							close(s_socket);
-							exit(1);
+					while (1) {
+						get_str_to_ptr(vote_response, sizeof(vote_response));
+						if (strcmp(vote_response, "INT") == 0) {
+							index = -1;
+							break;
 						}
-						if (vote_selected == 0) {
-							continue;
-						}
+						index = strtol(vote_response, NULL, 10) - 1;
 
-						if (FD_ISSET(s_socket, &vote_fds)) { // if we receive a packet but still waiting for user input
-							response socket_ret = c_read(); // process it
-							if (socket_ret == CLIENT_DISCONNECT) { // timeout? could be any other disconnect tho
-								printf("\033[1;36m[ CLIENT ]\033[0m \033[1;31minit.c:\033[0m Connection dropped.\n");
-								close(s_socket); // we should now close it LMFAO
-								exit(1);
-							}
-
-							if (socket_ret == READ_SUCCESS && ready) { // if we got a packet and its ready to be processed
-								if (active.header.type == PKT_STATS) { // vote results!!!
-									handle_round_results(host);
-									vote_state = -1; // we can break out of the loop now because we got the results packet, we dont need to listen for user input anymore
-								} else if (active.header.type == PKT_GAME_END) { // uh, game ended :(
-									printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
-									if (active.data != NULL) free(active.data); // let's not forget to do that lol (memory leaks)
-									exit(0);
-								}
-							}
-						}
-
-						if (vote_state != 0) {
+						if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
 							break;
 						}
 
-						if (FD_ISSET(STDIN_FILENO, &vote_fds)) { // if user input is received and we are still waiting for vote results to come
-							get_str_to_ptr(vote_response, sizeof(vote_response)); // process user input
-							index = strtol(vote_response, NULL, 10) - 1; // convert to index (user will input 1-5, we need 0-4)
+						printf("Invalid choice. Please enter a valid response number: ");
+					}
 
-							if (index >= 0 && index < LOBBY_SIZE && rec.responses[index] != NULL && rec.responses[index]->player != NULL) {
-								int pid = rec.responses[index]->player->p_id;
-								char pid_str[12];
-								snprintf(pid_str, sizeof(pid_str), "%d", pid);
-								Packet vote = strtopkt(PKT_VOTE,pid_str);
-								c_send(&vote);
-								free(vote.data);
-								vote_state = 1;
-							} else {
-								printf("Invalid choice. Please enter a valid response number: ");
-							}
-						}
+					if (index != -1) {
+						int pid = rec.responses[index]->player->p_id;
+						char pid_str[12]; 
+						snprintf(pid_str, sizeof(pid_str), "%d", pid);
+						Packet vote = strtopkt(PKT_VOTE,pid_str);
+						c_send(&vote);
+						free(vote.data);
+					} else {
+						printf("client timeout\n");
 					}
 
 					//TODO: make the player select one ofthe responses, once they select a value send back the PID that represents that player response 
@@ -301,8 +222,6 @@ int main() {
 						}
 						free(rec.responses);
 					}
-				} else if (active.header.type == PKT_STATS) {
-						handle_round_results(host);
 				} else if (active.header.type == PKT_GAME_END) {
 					printf("\033[1;35m[ SERVER ]\033[0m \033[1;32mserver_comms.c:\033[0m Received game over packet.\n");
 					if (active.data != NULL) free(active.data);

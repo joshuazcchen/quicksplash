@@ -4,6 +4,5 @@
 #include "gamestructs.h"
 
 void ui_show_vote_card(Card card, int response_count);
-void ui_show_vote_results(char* results_text);
 
 #endif
