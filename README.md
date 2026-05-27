@@ -1,19 +1,8 @@
-**Tasks to do:**
-- Game logic
-    - Question/prompt bank.
-    - Allow the user to enter an input (temporarily hold it on the user client before the actual socket sendoff to the host server).
+# QuickSplash (yes that's how we named it)
 
-- Host client
-    - Must be able to take in input from several hosts.
-    - Also needs to be able to initialize a server wherein people can join the game.
-    - process socket painfully.
-    - Server must never block (this is the server).
-    - Server must handle client disconnection (remove them from the game).
-
-- Player client
-    - Must be able to join a game.
-    - Once the game is joined, must be able to play the game.
-    - process socket painfully.
-    - Client may block.
-    - Client must gracefully terminate if host disconnects.
-        - Wrap the send into an error check s.t. if it does error, it can gracefully terminate.
+## Description
+Based off Cards Against Humanity (CAH) and quiplash, this is a non-strategic game with endless possibilities and guaranteed laughs!
+The users are grouped into lobbies, are shown the same prompt featuring a sentence with a missing part.
+The users can all individually type anything to fill in the blanks.
+A vote is then displayed where users select their favorite option.
+After a few rounds, the winner is the one with the most votes!
